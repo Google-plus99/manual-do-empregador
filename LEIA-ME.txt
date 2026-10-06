@@ -1,0 +1,23 @@
+MANUAL DO EMPREGADOR + SIMULADOR REGIME CERTO (PIX MERCADO PAGO)
+
+Estrutura:
+  index.html            página de vendas (carrossel, planos, oferta adicional e Pix)
+  imagens/              capa do e-book e fotos dos autores
+  simulador/index.html  Simulador Regime Certo em modo profissional (exige licença)
+  api/criar-pix.js      cria a cobrança Pix (PREÇOS REAIS dos planos ficam aqui)
+  api/status-pix.js     confirma o pagamento, libera o PDF e gera a licença do simulador
+  api/_licenca.js       gera a chave de licença (prazo em LICENCA_MESES)
+  api/webhook.js        recebe avisos do Mercado Pago (registra nos Logs)
+
+Variáveis de ambiente na Vercel (Settings > Environment Variables):
+  MP_ACCESS_TOKEN     Access Token de produção do Mercado Pago (APP_USR-...)
+  LINK_PDF            link de download do e-book
+  URL_SITE            ex.: https://manualdoempregador.com.br
+  LIC_CHAVE_PRIVADA   chave PRIVADA do gerador de licenças, em formato JWK
+                      (texto que começa com {"kty":"EC" ... e contém o campo "d")
+  LIC_DOMINIO         manualdoempregador.com.br (a licença só vale nesse domínio)
+
+Planos atuais: Manual R$ 47 | Simulador R$ 97 | Combo R$ 117.
+Mudar preços: api/criar-pix.js (PLANOS) e CONFIG.precos no index.html (os dois precisam bater).
+Mudar prazo da licença: api/_licenca.js (LICENCA_MESES) e CONFIG.licencaMeses.
+Fora do domínio real, a página entra em modo pré-visualização (Pix simulado).
