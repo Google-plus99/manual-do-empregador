@@ -3,6 +3,7 @@
 // O Access Token fica SOMENTE aqui no servidor (variável de ambiente na Vercel).
 
 import { randomUUID } from "node:crypto";
+import { inserir } from "./_supabase.js";
 
 // ---- PLANOS: o valor cobrado de verdade é definido aqui, nunca pela página ----
 export const PLANOS = {
@@ -74,6 +75,14 @@ export default async function handler(req, res) {
       console.error("Erro Mercado Pago:", JSON.stringify(d));
       return res.status(502).json({ erro: "Não foi possível gerar o Pix agora. Tente novamente em instantes." });
     }
+    // Registra o pedido no Supabase (se configurado). Falha aqui não impede a venda.
+    try {
+      await inserir("pedidos", {
+        pagamento_id: String(d.id), plano: p, valor: PLANOS[p].valor, status: d.status,
+        nome: nomeLimpo, email: String(email).trim(),
+      }, { upsertEm: "pagamento_id" });
+    } catch (e) { console.error("Falha ao gravar pedido:", e.message); }
+
     const pix = d.point_of_interaction?.transaction_data || {};
     return res.status(200).json({
       id: d.id, status: d.status, plano: p, valor: PLANOS[p].valor,

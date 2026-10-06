@@ -731,6 +731,7 @@ footer .copy{border-top:1px solid var(--linha);padding-top:20px;font-size:.72rem
       <label>E-mail <em>*</em><input name="email" type="email" required autocomplete="email"></label>
       <label>WhatsApp <em>*</em><input name="whats" type="tel" required autocomplete="tel"></label>
       <label>Mensagem <small>(opcional)</small><textarea name="msg"></textarea></label>
+      <input name="site" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px">
       <button class="btn" type="submit">Enviar mensagem</button>
       <p class="aviso">Ao enviar, você será redirecionado ao WhatsApp com sua mensagem preenchida.</p>
     </form>
@@ -893,6 +894,13 @@ document.querySelectorAll(".js-whats").forEach(a => { a.href = linkWhats; a.targ
 document.getElementById("form-contato").addEventListener("submit", e => {
   e.preventDefault();
   const f = e.target;
+  // Registra o contato no servidor em segundo plano (não atrasa a abertura do WhatsApp)
+  if (location.protocol.startsWith("http")) {
+    try {
+      fetch("/api/contato", { method: "POST", keepalive: true, headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nome: f.nome.value, email: f.email.value, whats: f.whats.value, msg: f.msg.value, site: f.site.value }) }).catch(() => {});
+    } catch (_) {}
+  }
   const texto = `Olá! Tenho interesse no Manual do Empregador.\n\nNome: ${f.nome.value}\nE-mail: ${f.email.value}\nWhatsApp: ${f.whats.value}` + (f.msg.value ? `\n\nMensagem: ${f.msg.value}` : "");
   window.open("https://wa.me/" + CONFIG.whatsapp + "?text=" + encodeURIComponent(texto), "_blank");
 });

@@ -1,23 +1,32 @@
-MANUAL DO EMPREGADOR + SIMULADOR REGIME CERTO (PIX MERCADO PAGO)
+MANUAL DO EMPREGADOR + SIMULADOR REGIME CERTO
+Vercel (hospedagem) + Supabase (pedidos, licenças, contatos e PDF) + Mercado Pago (Pix)
 
-Estrutura:
-  index.html            página de vendas (carrossel, planos, oferta adicional e Pix)
-  imagens/              capa do e-book e fotos dos autores
-  simulador/index.html  Simulador Regime Certo em modo profissional (exige licença)
-  api/criar-pix.js      cria a cobrança Pix (PREÇOS REAIS dos planos ficam aqui)
-  api/status-pix.js     confirma o pagamento, libera o PDF e gera a licença do simulador
-  api/_licenca.js       gera a chave de licença (prazo em LICENCA_MESES)
-  api/webhook.js        recebe avisos do Mercado Pago (registra nos Logs)
+1) SUPABASE
+   a. Crie um projeto em supabase.com (região South America, São Paulo).
+   b. SQL Editor > New query > cole supabase/schema.sql > Run.
+   c. Storage > bucket "ebook" (privado) > envie o PDF com o nome manual-do-empregador.pdf.
+   d. Project Settings > API: copie a Project URL e a chave service_role.
 
-Variáveis de ambiente na Vercel (Settings > Environment Variables):
-  MP_ACCESS_TOKEN     Access Token de produção do Mercado Pago (APP_USR-...)
-  LINK_PDF            link de download do e-book
-  URL_SITE            ex.: https://manualdoempregador.com.br
-  LIC_CHAVE_PRIVADA   chave PRIVADA do gerador de licenças, em formato JWK
-                      (texto que começa com {"kty":"EC" ... e contém o campo "d")
-  LIC_DOMINIO         manualdoempregador.com.br (a licença só vale nesse domínio)
+2) VERCEL
+   a. Add New > Project > importe o repositório manual-do-empregador > Deploy.
+   b. Settings > Environment Variables:
+        MP_ACCESS_TOKEN            Access Token de produção do Mercado Pago (APP_USR-...)
+        SUPABASE_URL               Project URL do Supabase
+        SUPABASE_SERVICE_ROLE_KEY  chave service_role do Supabase
+        URL_SITE                   endereço do site (primeiro o .vercel.app, depois o domínio)
+        LIC_CHAVE_PRIVADA          chave privada JWK do gerador de licenças
+        LIC_DOMINIO                mesmo domínio de URL_SITE, sem https://
+        PDF_CAMINHO                (opcional) nome do PDF no bucket, padrão manual-do-empregador.pdf
+        LINK_PDF                   (opcional) link reserva do PDF
+   c. Deployments > Redeploy para valer as variáveis.
+   d. Teste com valor de R$ 1,00 (PLANOS em api/criar-pix.js) e confira o pedido em
+      Supabase > Table Editor > pedidos.
 
-Planos atuais: Manual R$ 47 | Simulador R$ 97 | Combo R$ 117.
-Mudar preços: api/criar-pix.js (PLANOS) e CONFIG.precos no index.html (os dois precisam bater).
-Mudar prazo da licença: api/_licenca.js (LICENCA_MESES) e CONFIG.licencaMeses.
-Fora do domínio real, a página entra em modo pré-visualização (Pix simulado).
+3) DOMÍNIO (depois dos testes)
+   Vercel > Settings > Domains > adicione manualdoempregador.com.br e siga as instruções de DNS.
+   Atualize URL_SITE e LIC_DOMINIO e faça Redeploy.
+   Atenção: a licença só funciona no domínio de LIC_DOMINIO.
+
+Preços: api/criar-pix.js (PLANOS) e CONFIG.precos no index.html (os dois precisam bater).
+Prazo da licença: api/_licenca.js (LICENCA_MESES) e CONFIG.licencaMeses.
+Fora dos domínios em CONFIG.dominiosReais, a página entra em modo pré-visualização (Pix simulado).
