@@ -33,7 +33,7 @@
         <li><a href="cursos.html">Cursos</a></li>
       </ul>
     </nav>
-    <a class="btn acao-topo" href="index.html#produtos">Ver produtos</a>
+    <a class="btn acao-topo" href="index.html#precos">Ver preços</a>
     <button class="abrir-menu" type="button" aria-label="Abrir menu" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
   </div>
 </header>
@@ -76,7 +76,7 @@
               <li>Férias, FGTS, estabilidade e rescisão</li>
               <li>46 páginas de consulta rápida, por Felipe Lopes e Lais Leite</li>
             </ul>
-            <div class="preco-linha"><span class="de" data-de="manual">de <span></span></span><strong>R$ <span data-preco="manual"></span></strong></div>
+            <div class="preco-linha"><span class="de" data-de="manual">de <span>R$ 97,00</span></span><strong>R$ <span data-preco="manual">47</span></strong></div>
             <div class="botoes"><button class="btn btn-claro" type="button" data-comprar="manual">Comprar o e-book</button><a class="btn btn-contorno" href="manual-do-empregador.html">Ver detalhes</a></div>
           </div>
         </article>
@@ -91,7 +91,7 @@
               <li>E-commerce, LGPD, Procon e Juizado Especial</li>
               <li>Checklist preventivo e modelo de termo de garantia</li>
             </ul>
-            <div class="preco-linha"><span class="de" data-de="cartilha">de <span></span></span><strong>R$ <span data-preco="cartilha"></span></strong></div>
+            <div class="preco-linha"><span class="de" data-de="cartilha">de <span>R$ 67,00</span></span><strong>R$ <span data-preco="cartilha">37</span></strong></div>
             <div class="botoes"><button class="btn btn-claro" type="button" data-comprar="cartilha">Comprar a cartilha</button><a class="btn btn-contorno" href="cartilha-do-bom-fornecedor.html">Ver detalhes</a></div>
           </div>
         </article>
@@ -114,9 +114,9 @@
             <ul>
               <li>Fator R calculado a partir da folha e do pró-labore</li>
               <li>Relatório para impressão e planilha Excel</li>
-              <li>Para empresas, contadores e advogados, licença de <span data-licenca></span></li>
+              <li>Para empresas, contadores e advogados, licença de <span data-licenca>12 meses</span></li>
             </ul>
-            <div class="preco-linha"><span class="de" data-de="simulador">de <span></span></span><strong>R$ <span data-preco="simulador"></span></strong></div>
+            <div class="preco-linha"><span class="de" data-de="simulador" hidden>de <span></span></span><strong>R$ <span data-preco="simulador">97</span></strong></div>
             <div class="botoes"><button class="btn btn-claro" type="button" data-comprar="simulador">Comprar o simulador</button><a class="btn btn-contorno" href="simulador-tributario.html">Ver detalhes</a></div>
           </div>
         </article>
@@ -134,27 +134,69 @@
   </div>
 </section>
 
-<section class="nevoa" id="combos">
-  <div class="container duas-colunas">
-    <div>
-      <h2>Combo Gestão Segura</h2>
-      <p class="intro" style="margin-bottom:16px">A folha de pagamento também decide quanto imposto a empresa paga. Por isso o Manual do Empregador e o Simulador Tributário são vendidos juntos com desconto.</p>
-      <p class="intro">Organize as relações de trabalho com o Manual e use o Simulador para ver como salários e pró-labore mudam o regime tributário mais vantajoso.</p>
+<section class="nevoa" id="precos">
+  <div class="container">
+    <h2>Preços</h2>
+    <p class="intro">Compre cada produto separadamente ou leve o Manual do Empregador e o Simulador Tributário juntos, com desconto, no Combo Gestão Segura. Pagamento via Pix, com acesso liberado na hora.</p>
+    <div class="precos">
+      <article class="preco-card">
+        <span class="tipo">E-book</span>
+        <h3>Manual do Empregador</h3>
+        <p class="desc">Guia trabalhista da contratação à rescisão, em PDF.</p>
+        <div class="de" data-de="manual">de <span>R$ 97,00</span></div>
+        <div class="preco"><small>R$</small> <span data-preco="manual">47</span></div>
+        <ul class="incluso">
+          <li>46 páginas em PDF</li>
+          <li>Por Felipe Lopes e Lais Leite</li>
+          <li>Download na hora</li>
+        </ul>
+        <button class="btn" type="button" data-comprar="manual">Comprar</button>
+        <a class="link-seta" href="manual-do-empregador.html">Ver detalhes</a>
+      </article>
+      <article class="preco-card">
+        <span class="tipo">E-book</span>
+        <h3>Cartilha do Bom Fornecedor</h3>
+        <p class="desc">Guia prático do Código de Defesa do Consumidor, em PDF.</p>
+        <div class="de" data-de="cartilha">de <span>R$ 67,00</span></div>
+        <div class="preco"><small>R$</small> <span data-preco="cartilha">37</span></div>
+        <ul class="incluso">
+          <li>12 capítulos e checklist</li>
+          <li>Modelo de termo de garantia</li>
+          <li>Download na hora</li>
+        </ul>
+        <button class="btn" type="button" data-comprar="cartilha">Comprar</button>
+        <a class="link-seta" href="cartilha-do-bom-fornecedor.html">Ver detalhes</a>
+      </article>
+      <article class="preco-card">
+        <span class="tipo">Ferramenta online</span>
+        <h3>Simulador Tributário</h3>
+        <p class="desc">Simples, Presumido e Real lado a lado, com a Reforma até 2033.</p>
+        <div class="de" data-de="simulador" hidden>de <span></span></div>
+        <div class="preco"><small>R$</small> <span data-preco="simulador">97</span></div>
+        <ul class="incluso">
+          <li>Licença de <span data-licenca>12 meses</span></li>
+          <li>Relatório e planilha Excel</li>
+          <li>Chave liberada na hora</li>
+        </ul>
+        <button class="btn" type="button" data-comprar="simulador">Comprar</button>
+        <a class="link-seta" href="simulador-tributario.html">Ver detalhes</a>
+      </article>
+      <article class="preco-card destaque" id="combos">
+        <span class="tipo">Combo Gestão Segura</span>
+        <h3>Manual + Simulador</h3>
+        <p class="desc">O Manual do Empregador e o Simulador Tributário juntos.</p>
+        <div class="de" data-de="combo-gestao">de <span>R$ 144,00</span></div>
+        <div class="preco"><small>R$</small> <span data-preco="combo-gestao">117</span></div>
+        <ul class="incluso">
+          <li>Manual do Empregador em PDF</li>
+          <li>Simulador, licença de <span data-licenca>12 meses</span></li>
+          <li class="economia" data-economia="combo-gestao">Economia de <span>R$ 27,00</span></li>
+        </ul>
+        <button class="btn" type="button" data-comprar="combo-gestao">Comprar o combo</button>
+        <span class="link-seta" aria-hidden="true" style="visibility:hidden">.</span>
+      </article>
     </div>
-    <article class="combo destaque">
-      <span class="selo">Leve os dois com desconto</span>
-      <h3>Manual do Empregador + Simulador Tributário</h3>
-      <ul class="itens-combo">
-        <li><span>Manual do Empregador, e-book em PDF</span><span data-preco-brl="manual"></span></li>
-        <li><span>Simulador Regime Certo, licença de <span data-licenca></span></span><span data-preco-brl="simulador"></span></li>
-      </ul>
-      <div class="preco-bloco">
-        <div class="de" data-de="combo-gestao">de <span></span></div>
-        <div class="preco"><small>R$</small> <span data-preco="combo-gestao"></span></div>
-        <div class="economia" data-economia="combo-gestao">Economia de <span></span></div>
-      </div>
-      <button class="btn" type="button" data-comprar="combo-gestao">Comprar o combo</button>
-    </article>
+    <p class="nota" style="margin-top:20px">A Cartilha do Bom Fornecedor é vendida apenas separadamente.</p>
   </div>
 </section>
 
@@ -253,7 +295,7 @@
         <a href="manual-do-empregador.html">Manual do Empregador</a>
         <a href="cartilha-do-bom-fornecedor.html">Cartilha do Bom Fornecedor</a>
         <a href="simulador-tributario.html">Simulador Tributário</a>
-        <a href="index.html#combos">Combo Gestão Segura</a>
+        <a href="index.html#precos">Preços</a>
         <a href="cursos.html">Cursos</a>
       </div>
       <div>

@@ -354,3 +354,23 @@ footer .legal{border-top:1px solid var(--linha);padding-top:22px;font-size:.82re
 .equipe.uma .pessoa img{margin:0}
 
 @media(max-width:700px){.equipe.uma .pessoa{grid-template-columns:1fr;gap:0}.equipe.uma .pessoa img{margin-bottom:22px}}
+
+/* ---------- tabela de preços (página inicial) ---------- */
+.precos{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:40px;align-items:stretch}
+.preco-card{position:relative;display:flex;flex-direction:column;gap:6px;background:#fff;border:1px solid var(--linha);padding:28px 24px 24px}
+.preco-card.destaque{border:2px solid var(--vinho);box-shadow:0 24px 40px -28px rgba(110,16,33,.55)}
+.preco-card .tipo{font-size:.88rem;font-weight:600;color:var(--vinho)}
+.preco-card h3{font-size:1.15rem}
+.preco-card .desc{color:var(--suave);font-size:.92rem;min-height:3em}
+.preco-card .de[hidden]{display:block!important;visibility:hidden}
+.preco-card .preco{font-size:2.5rem}
+.preco-card .incluso{list-style:none;flex:1;margin:12px 0 18px;padding-top:12px;border-top:1px solid var(--linha)}
+.preco-card .incluso li{position:relative;padding:5px 0 5px 22px;font-size:.92rem}
+.preco-card .incluso li::before{content:"";position:absolute;left:0;top:14px;width:12px;height:2px;background:var(--vinho)}
+.preco-card .incluso li.economia{color:var(--verde);font-weight:600}
+.preco-card .incluso li.economia::before{background:var(--verde)}
+.preco-card .btn{width:100%}
+.preco-card .link-seta{align-self:center;margin-top:12px;font-size:.92rem}
+@media(max-width:1060px){.precos{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.precos{grid-template-columns:1fr}.preco-card .desc{min-height:0}.preco-card.destaque{order:-1}}
+@media(min-width:1061px){.preco-card h3{min-height:2.5em}.preco-card .desc{min-height:4.6em}}
