@@ -5,12 +5,9 @@
 import { randomUUID } from "node:crypto";
 import { inserir } from "./_supabase.js";
 
-// ---- PLANOS: o valor cobrado de verdade é definido aqui, nunca pela página ----
-export const PLANOS = {
-  ebook:     { valor: 47.0,  descricao: "Manual do Empregador - E-book (PDF)" },
-  simulador: { valor: 97.0,  descricao: "Simulador Tributário Regime Certo (licença 12 meses)" },
-  kit:       { valor: 117.0, descricao: "Combo Manual do Empregador + Simulador Regime Certo (licença 12 meses)" },
-};
+// ---- O valor cobrado vem do catálogo único (assets/catalogo.js), nunca da página ----
+import { OFERTAS } from "../assets/catalogo.js";
+export const PREFIXO_REF = "ifl:";
 const VALIDADE_MINUTOS = 30;
 
 const soNumeros = s => String(s || "").replace(/\D/g, "");
@@ -39,8 +36,9 @@ export default async function handler(req, res) {
   const token = process.env.MP_ACCESS_TOKEN;
   if (!token) return res.status(500).json({ erro: "Pagamento indisponível no momento." });
 
-  const { nome, email, cpf, plano } = req.body || {};
-  const p = PLANOS[plano] ? plano : "ebook";
+  const { nome, email, cpf, oferta } = req.body || {};
+  if (!Object.hasOwn(OFERTAS, oferta)) return res.status(400).json({ erro: "Produto inválido." });
+  const p = oferta, o = OFERTAS[p];
   const nomeLimpo = String(nome || "").trim().replace(/\s+/g, " ");
 
   if (nomeLimpo.split(" ").length < 2) return res.status(400).json({ erro: "Informe nome e sobrenome." });
@@ -49,12 +47,12 @@ export default async function handler(req, res) {
 
   const [primeiro, ...resto] = nomeLimpo.split(" ");
   const corpo = {
-    transaction_amount: PLANOS[p].valor,
-    description: PLANOS[p].descricao,
+    transaction_amount: o.preco,
+    description: `Instituto Felipe Lopes: ${o.descricao}`,
     payment_method_id: "pix",
     date_of_expiration: expiracao(VALIDADE_MINUTOS),
-    external_reference: `manual-empregador:${p}`,
-    metadata: { plano: p, nome: nomeLimpo },
+    external_reference: `${PREFIXO_REF}${p}`,
+    metadata: { oferta: p, nome: nomeLimpo },
     payer: {
       email: String(email).trim(),
       first_name: primeiro,
@@ -78,14 +76,14 @@ export default async function handler(req, res) {
     // Registra o pedido no Supabase (se configurado). Falha aqui não impede a venda.
     try {
       await inserir("pedidos", {
-        pagamento_id: String(d.id), plano: p, valor: PLANOS[p].valor, status: d.status,
+        pagamento_id: String(d.id), plano: p, valor: o.preco, status: d.status,
         nome: nomeLimpo, email: String(email).trim(),
       }, { upsertEm: "pagamento_id" });
     } catch (e) { console.error("Falha ao gravar pedido:", e.message); }
 
     const pix = d.point_of_interaction?.transaction_data || {};
     return res.status(200).json({
-      id: d.id, status: d.status, plano: p, valor: PLANOS[p].valor,
+      id: d.id, status: d.status, oferta: p, valor: o.preco,
       qr_code: pix.qr_code, qr_code_base64: pix.qr_code_base64, ticket_url: pix.ticket_url,
       expira_em: d.date_of_expiration,
     });

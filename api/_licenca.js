@@ -9,7 +9,8 @@ const { subtle } = webcrypto;
 const b64u = buf =>
   Buffer.from(buf).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
 
-export const LICENCA_MESES = 12; // prazo da licença vendida no kit
+import { LICENCA_MESES } from "../assets/catalogo.js"; // prazo definido no catálogo
+export { LICENCA_MESES };
 
 export async function gerarLicenca({ nome, idPagamento, dataAprovacao }) {
   const jwk = process.env.LIC_CHAVE_PRIVADA;

@@ -1,13 +1,13 @@
 -- supabase/schema.sql
 -- Rode este arquivo uma única vez no Supabase: SQL Editor > New query > colar > Run.
--- Cria as tabelas de pedidos e contatos e o armazenamento privado do e-book.
+-- Cria as tabelas de pedidos e contatos e o armazenamento privado dos produtos.
 -- O acesso é feito só pelo servidor (chave service_role), nunca pelo navegador.
 
 -- ============ PEDIDOS (um por cobrança Pix) ============
 create table if not exists public.pedidos (
   id                bigint generated always as identity primary key,
   pagamento_id      text not null unique,            -- id do pagamento no Mercado Pago
-  plano             text not null check (plano in ('ebook','simulador','kit')),
+  plano             text not null,                   -- id da oferta no catálogo (assets/catalogo.js)
   valor             numeric(10,2) not null,
   status            text not null default 'pending', -- pending, approved, cancelled, expired...
   nome              text not null,
@@ -29,7 +29,7 @@ create table if not exists public.contatos (
   email      text not null,
   whatsapp   text not null,
   mensagem   text,
-  origem     text default 'site',
+  origem     text default 'site',                   -- 'site' ou 'cursos' (lista de espera)
   criado_em  timestamptz not null default now()
 );
 
@@ -38,11 +38,16 @@ create table if not exists public.contatos (
 alter table public.pedidos  enable row level security;
 alter table public.contatos enable row level security;
 
--- ============ ARMAZENAMENTO PRIVADO DO E-BOOK ============
--- Bucket privado "ebook". Depois de rodar, envie o PDF em Storage > ebook
--- com o nome definido em PDF_CAMINHO (padrão: manual-do-empregador.pdf).
+-- Se a versão anterior deste arquivo já foi rodada, libera o campo plano para os novos produtos
+alter table public.pedidos drop constraint if exists pedidos_plano_check;
+
+-- ============ ARMAZENAMENTO PRIVADO DOS PRODUTOS ============
+-- Bucket privado "produtos". Depois de rodar, envie os PDFs em Storage > produtos
+-- com os nomes definidos em assets/catalogo.js:
+--   manual-do-empregador.pdf
+--   cartilha-do-bom-fornecedor.pdf
 insert into storage.buckets (id, name, public)
-values ('ebook', 'ebook', false)
+values ('produtos', 'produtos', false)
 on conflict (id) do nothing;
 
 -- ============ VISÃO PARA CONSULTA RÁPIDA NO PAINEL ============

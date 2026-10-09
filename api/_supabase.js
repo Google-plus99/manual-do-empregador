@@ -50,6 +50,6 @@ export async function linkAssinado(bucket, caminho, segundos) {
   });
   const rel = r?.signedURL || r?.signedUrl;
   if (!rel) return null;
-  // Força o download com nome amigável
-  return `${URL_SB}/storage/v1${rel}&download=Manual-do-Empregador.pdf`;
+  // Força o download com o próprio nome do arquivo
+  return `${URL_SB}/storage/v1${rel}&download=${encodeURIComponent(caminho)}`;
 }

@@ -1,61 +1,68 @@
-# Manual do Empregador + Simulador Regime Certo
+# Instituto Felipe Lopes: portal de infoprodutos e cursos
 
-Site de vendas (manualdoempregador.com.br) do e-book **Manual do Empregador** (Felipe Lopes e Lais Leite) integrado ao **Simulador Tributário Regime Certo** (Virgilio Calmon, co-autor). Hospedagem na **Vercel**, pagamento **Pix via Mercado Pago (Checkout Transparente)**, com o QR Code exibido no próprio site.
+Portal de vendas do **Instituto Felipe Lopes** (institutofelipelopes.com.br), com uma página por produto. Hospedagem na **Vercel**, dados no **Supabase**, pagamento **Pix via Mercado Pago (Checkout Transparente)** com o QR Code exibido no próprio site. O repositório se chama `manual-do-empregador` por histórico: o projeto começou como a página de vendas desse e-book.
+
+## Produtos
+
+| Oferta (id) | O que entrega | Preço provisório |
+|---|---|---|
+| `manual` | PDF Manual do Empregador (Felipe Lopes e Lais Leite, 46 p.) | R$ 47 (de 97) |
+| `cartilha` | PDF Cartilha do Bom Fornecedor (Felipe Lopes Advogados, 24 p.) | R$ 37 (de 67) |
+| `simulador` | Licença do Simulador Regime Certo (Virgilio Calmon, co-autor) | R$ 97 |
+| `combo-empresario` | Manual + Cartilha | R$ 67 |
+| `combo-completo` | Manual + Cartilha + Simulador | R$ 147 |
+
+**Fonte única de preços e entregas: `assets/catalogo.js`.** É importado pelas páginas (`assets/app.js`) e pelo servidor (`api/criar-pix.js`, `api/_pedidos.js`, `api/_licenca.js`). Para mudar preço, prazo da licença (`LICENCA_MESES`) ou criar produto/combo, altere só esse arquivo. Cada oferta pode ter `upgrade`, que aparece como sugestão na janela de compra.
+
+Para um novo PDF: adicionar em `PRODUTOS` (tipo `pdf`, campo `arquivo`), criar a oferta em `OFERTAS`, enviar o PDF ao bucket `produtos` do Supabase com o mesmo nome e criar a página do produto.
 
 ## Estrutura
 
-- `index.html`: página de vendas (HTML, CSS e JS num arquivo só, sem build).
-  - Carrossel no topo com dois slides: Manual e Simulador.
-  - Seções: alerta, conteúdo do Manual, simulador (Fator R, públicos empresa e contador/advogado), para quem é, autores (3 colunas), por que, depoimentos, planos, dúvidas, contato, rodapé.
-  - Janela de compra Pix com oferta adicional (quem compra um produto pode completar o combo).
-  - Bloco `CONFIG` no fim do arquivo: preços, prazo da licença, WhatsApp, depoimentos.
-  - Fora dos domínios em `CONFIG.dominiosReais`, entra em modo pré-visualização (Pix simulado).
-- `simulador/index.html`: simulador em modo `profissional` (exige chave de licença). Aceita `?chave=` na URL para preencher a chave.
-- `imagens/`: capa.jpg, felipe.jpg, lais.jpg, virgilio.jpg (capa e fotos de Felipe/Lais foram recortadas de prints, resolução baixa; substituir pelos originais).
-- `api/` (funções serverless da Vercel, Node 18+, ESM):
-  - `criar-pix.js`: cria a cobrança Pix. **Preços reais ficam em `PLANOS`.** `external_reference = manual-empregador:<plano>`.
-  - `status-pix.js`: consultado pela página a cada 5 s. Quando aprovado, devolve `link_pdf` (planos ebook/kit) e gera a licença (planos simulador/kit).
-  - `_licenca.js`: gera chave `RC1.<dados>.<assinatura>` (ECDSA P-256, SHA-256) compatível com a verificação do simulador. Prazo em `LICENCA_MESES`.
-  - `_pedidos.js`: regra comum de status e webhook (grava pedido, emite licença uma única vez, gera link temporário do PDF).
-  - `_supabase.js`: acesso REST ao Supabase com a service_role (sem dependências). Sem variáveis, não grava nada e o site segue vendendo.
-  - `webhook.js`: recebe avisos do Mercado Pago, atualiza o pedido e emite a licença mesmo se o cliente fechou a página.
-  - `contato.js`: grava o formulário "Fale com um especialista" na tabela `contatos` (campo invisível `site` contra robôs).
-- `supabase/schema.sql`: tabelas `pedidos` e `contatos` (RLS ligado, sem políticas públicas), bucket privado `ebook` e a visão `vendas_aprovadas`.
-- `referencias/`: arquivos originais (site salvo, simulador público) e a prévia com imagens embutidas. Não são publicados.
+- Páginas (HTML estático, sem build; topo e rodapé repetidos em cada arquivo, ao mudar o menu altere todos):
+  - `index.html`: Instituto, vitrine em carrossel dos 3 produtos, combos, sobre, equipe, chamada de cursos, dúvidas, contato.
+  - `manual-do-empregador.html`, `cartilha-do-bom-fornecedor.html`, `simulador-tributario.html`: uma página por produto.
+  - `cursos.html`: cursos em preparação, lista de espera (grava em `contatos` com `origem = 'cursos'`).
+  - `termos.html`, `privacidade.html`: **minutas**, revisar antes de publicar.
+- `assets/estilo.css`: estilo único (cores da logo em `:root`). Fonte Saira hospedada em `assets/fontes/`.
+- `assets/app.js`: preços, janela de compra Pix, carrossel, menu do celular, formulários. Bloco `CONFIG` no topo: WhatsApp, e-mail, dados da empresa (razão social, CNPJ, endereço; exigidos pelo Decreto 7.962/2013) e `dominiosReais`. Fora desses domínios a compra entra em modo pré-visualização (Pix simulado).
+- `assets/img/`: logo (transparente, a partir da imagem enviada), marca, favicon, capas (Manual renderizada do PDF final; Cartilha criada no mesmo padrão), fotos dos autores (Felipe e Lais recortadas de prints, resolução baixa).
+- `simulador/index.html`: o simulador em modo `profissional` (exige chave). Aceita `?chave=` na URL.
+- `api/` (funções Vercel, Node 18+, ESM, sem dependências):
+  - `criar-pix.js`: cria a cobrança; `external_reference = ifl:<oferta>`.
+  - `status-pix.js` e `webhook.js`: usam `_pedidos.js`, que grava o pedido, gera um link assinado (24 h) para cada PDF e emite a licença uma única vez.
+  - `_licenca.js`: chave `RC1.<dados>.<assinatura>` (ECDSA P-256) compatível com o simulador.
+  - `_supabase.js`: REST com a service_role. Sem variáveis, não grava nada e o site segue vendendo.
+  - `contato.js`: formulários; `origem` = `site` ou `cursos`; campo invisível `site` contra robôs.
+- `supabase/schema.sql`: tabelas `pedidos` e `contatos` (RLS ligado, sem políticas públicas), bucket privado `produtos`, visão `vendas_aprovadas`. Idempotente.
+- `vercel.json`: endereços sem `.html` e redirecionamentos `/ebook`, `/manual`, `/cartilha`.
+- `referencias/`: arquivos originais. Não são publicados (`.vercelignore`).
 
-## Planos (valores provisórios)
-
-| Plano | id | Preço | Entrega |
-|---|---|---|---|
-| Manual do Empregador | `ebook` | R$ 47 | PDF |
-| Simulador Regime Certo | `simulador` | R$ 97 | Licença 12 meses |
-| Combo Gestão Segura | `kit` | R$ 117 | PDF + licença |
-
-Ao mudar preços, alterar **nos dois lugares**: `PLANOS` em `api/criar-pix.js` e `CONFIG.precos` em `index.html`. Prazo da licença: `LICENCA_MESES` em `api/_licenca.js` e `CONFIG.licencaMeses`.
+**Os PDFs dos produtos nunca entram no repositório** (ele é público). Ficam só no bucket `produtos` do Supabase.
 
 ## Variáveis de ambiente (Vercel)
 
-- `MP_ACCESS_TOKEN`: Access Token de produção (APP_USR-...). A conta precisa de chave Pix.
-- `LINK_PDF`: link de download do e-book.
-- `URL_SITE`: ex. https://manualdoempregador.com.br (ativa o webhook e o link do simulador).
+- `MP_ACCESS_TOKEN`: Access Token de produção do Mercado Pago. A conta precisa de chave Pix.
+- `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY`.
+- `URL_SITE`: ex. https://institutofelipelopes.com.br (webhook e link do simulador).
 - `LIC_CHAVE_PRIVADA`: chave privada JWK do gerador de licenças (par da chave pública embutida no simulador).
-- `LIC_DOMINIO`: manualdoempregador.com.br.
-- `SUPABASE_URL`: URL do projeto Supabase.
-- `SUPABASE_SERVICE_ROLE_KEY`: chave service_role (só no servidor).
-- `PDF_BUCKET` (padrão `ebook`) e `PDF_CAMINHO` (padrão `manual-do-empregador.pdf`): PDF privado; o comprador recebe link assinado válido por 24 h. `LINK_PDF` fica só como reserva.
+- `LIC_DOMINIO`: institutofelipelopes.com.br (a licença só funciona nesse domínio).
+- `PDF_BUCKET` (opcional, padrão `produtos`).
 
 Nunca colocar token ou chave privada no HTML nem no repositório.
 
 ## Entrega ao cliente
 
-Sem login e senha: o acesso ao simulador é pela chave de licença mostrada na tela de confirmação. Toda chave emitida fica gravada na tabela `pedidos` do Supabase; se o cliente perder, buscar pelo e-mail e reenviar.
+Sem login e senha. A tela de confirmação mostra um botão de download por PDF e, se houver simulador, a chave de licença. Tudo fica gravado na tabela `pedidos`; para reenviar, buscar pelo e-mail.
 
 ## Pendências
 
 - Definir preços finais e prazo da licença.
-- Envio automático do PDF e da chave por e-mail após o pagamento (ex.: Resend no `webhook.js`).
+- Preencher `CONFIG.empresa` e `CONFIG.email` em `assets/app.js` e revisar termos e privacidade.
+- Confirmar o WhatsApp do Instituto (hoje é o do site antigo do Manual).
 - Confirmar que a chave pública do simulador é o par de `LIC_CHAVE_PRIVADA`.
-- Decidido: publicar como projeto novo na Vercel, testar no endereço vercel.app e só depois apontar o domínio (o site atual em React tem a página `/evento`, que precisa ser preservada ou migrada).
+- Envio automático dos links e da chave por e-mail após o pagamento.
+- Página `/evento` do site antigo não foi migrada.
+- A biografia de Felipe no PDF do Manual diz "mais de 15 anos"; no site está "mais de 20 anos". Confirmar.
 - Revisar textos à luz do Provimento 205/2021 da OAB.
 
 ## Estilo dos textos
