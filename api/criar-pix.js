@@ -52,7 +52,7 @@ export default async function handler(req, res) {
     payment_method_id: "pix",
     date_of_expiration: expiracao(VALIDADE_MINUTOS),
     external_reference: `${PREFIXO_REF}${p}`,
-    metadata: { oferta: p, nome: nomeLimpo },
+    metadata: { oferta: p, nome: nomeLimpo, email: String(email).trim() },
     payer: {
       email: String(email).trim(),
       first_name: primeiro,

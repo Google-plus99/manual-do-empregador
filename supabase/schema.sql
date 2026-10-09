@@ -38,6 +38,9 @@ create table if not exists public.contatos (
 alter table public.pedidos  enable row level security;
 alter table public.contatos enable row level security;
 
+-- Controle do e-mail de entrega (evita mandar duas vezes)
+alter table public.pedidos add column if not exists email_enviado_em timestamptz;
+
 -- Se a versão anterior deste arquivo já foi rodada, libera o campo plano para os novos produtos
 alter table public.pedidos drop constraint if exists pedidos_plano_check;
 

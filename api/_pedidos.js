@@ -5,11 +5,13 @@
 
 import { gerarLicenca } from "./_licenca.js";
 import { supabaseAtivo, buscarUm, atualizar, inserir, linkAssinado } from "./_supabase.js";
-import { OFERTAS, PRODUTOS } from "../assets/catalogo.js";
+import { OFERTAS, PRODUTOS, WHATSAPP } from "../assets/catalogo.js";
+import { emailAtivo, enviarEntrega } from "./_email.js";
 
 const PREFIXO = "ifl:";
 const BUCKET = process.env.PDF_BUCKET || "produtos";
-const PDF_VALIDADE_SEG = 60 * 60 * 24; // links dos PDFs valem 24 horas
+const PDF_VALIDADE_SEG = 60 * 60 * 24;          // links da tela valem 24 horas
+const PDF_VALIDADE_EMAIL_SEG = 60 * 60 * 24 * 7; // links do e-mail valem 7 dias
 
 export async function consultarPagamento(id) {
   const r = await fetch(`https://api.mercadopago.com/v1/payments/${encodeURIComponent(id)}`, {
@@ -24,6 +26,7 @@ export async function consultarPagamento(id) {
 }
 
 const ofertaDe = p => String(p.external_reference).slice(PREFIXO.length);
+const emailDe = p => p.metadata?.email || p.payer?.email || "";
 const nomeDe = p => p.metadata?.nome || [p.payer?.first_name, p.payer?.last_name].filter(Boolean).join(" ") || "Cliente";
 const CAMPOS_LIC = "select=licenca_numero,licenca_chave,licenca_vencimento,nome";
 const daLinha = l => ({ numero: l.licenca_numero, chave: l.licenca_chave, vencimento: l.licenca_vencimento, titular: l.nome });
@@ -61,7 +64,7 @@ export async function processarPagamento(p) {
       // Garante que o pedido existe (caso tenha sido criado antes do Supabase estar ativo)
       await inserir("pedidos", {
         pagamento_id: String(p.id), plano: oferta, valor: p.transaction_amount, status: p.status,
-        nome: nomeDe(p), email: p.payer?.email || "", aprovado_em: p.date_approved || null,
+        nome: nomeDe(p), email: emailDe(p), aprovado_em: p.date_approved || null,
       }, { upsertEm: "pagamento_id" });
     } catch (e) { console.error("Falha ao gravar pedido:", e.message); }
   }
@@ -89,5 +92,41 @@ export async function processarPagamento(p) {
       resposta.licenca_erro = true;
     }
   }
+
+  resposta.email_enviado = await enviarEmailUmaVez(p, oferta, pdfs, resposta);
   return resposta;
+}
+
+// Manda o e-mail de entrega uma única vez por pagamento.
+// Com Supabase, a coluna email_enviado_em funciona como trava; sem ele, o Resend
+// descarta repetições pela chave de idempotência.
+async function enviarEmailUmaVez(p, oferta, pdfs, resposta) {
+  const para = emailDe(p);
+  if (!emailAtivo() || !para) return false;
+  const pid = String(p.id);
+  if (supabaseAtivo()) {
+    const ja = await buscarUm("pedidos", `pagamento_id=eq.${pid}&email_enviado_em=not.is.null&select=pagamento_id`);
+    if (ja) return true;
+    const marcadas = await atualizar("pedidos", `pagamento_id=eq.${pid}&email_enviado_em=is.null`, { email_enviado_em: new Date().toISOString() });
+    if (!marcadas?.length) return true; // outra chamada já está enviando
+  }
+  try {
+    const downloads = [];
+    for (const id of pdfs) {
+      let url = null;
+      try { url = await linkAssinado(BUCKET, PRODUTOS[id].arquivo, PDF_VALIDADE_EMAIL_SEG); } catch (_) {}
+      downloads.push({ titulo: PRODUTOS[id].nome, url: url || resposta.downloads?.find(d => d.produto === id)?.url });
+    }
+    await enviarEntrega({
+      para, idPagamento: pid, nome: nomeDe(p), oferta: OFERTAS[oferta].nome,
+      downloads, licenca: resposta.licenca, linkSimulador: resposta.link_simulador, whatsapp: WHATSAPP,
+    });
+    console.log(`[E-MAIL] entrega enviada | pagamento ${pid} | ${para}`);
+    return true;
+  } catch (e) {
+    console.error("Falha ao enviar e-mail:", e.message);
+    // libera a trava para tentar de novo no próximo aviso
+    if (supabaseAtivo()) { try { await atualizar("pedidos", `pagamento_id=eq.${pid}`, { email_enviado_em: null }); } catch (_) {} }
+    return false;
+  }
 }

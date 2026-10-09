@@ -2,14 +2,14 @@
 // Comportamento comum a todas as páginas do portal.
 // Preços e produtos vêm de assets/catalogo.js. Dados de contato ficam no CONFIG abaixo.
 
-import { OFERTAS, PRODUTOS, LICENCA_MESES, somaAvulsa } from "./catalogo.js";
+import { OFERTAS, PRODUTOS, LICENCA_MESES, WHATSAPP, somaAvulsa } from "./catalogo.js";
 
 /* ====================================================================
    CONFIG: dados de contato e identificação da empresa
    ==================================================================== */
 const CONFIG = {
-  // WhatsApp com DDI + DDD, só números
-  whatsapp: "558198590139",
+  // WhatsApp: definido em assets/catalogo.js (vale também para o e-mail de entrega)
+  whatsapp: WHATSAPP,
   mensagemWhats: "Olá! Quero saber mais sobre os produtos do Instituto Felipe Lopes.",
   email: "",
 
@@ -176,7 +176,8 @@ const JANELA = `
         </div>
         <p class="aviso" style="margin-top:10px">Guarde esta chave. Você vai precisar dela se acessar o simulador em outro navegador.</p>
       </div>
-      <p class="aviso">Os links de download valem por 24 horas. Baixe e guarde os arquivos.</p>
+      <p class="aviso" id="aviso-email" hidden>Também enviamos tudo para o seu e-mail. Confira a caixa de entrada e o spam.</p>
+      <p class="aviso">Os links desta tela valem por 24 horas. Baixe e guarde os arquivos.</p>
       <p class="aviso" id="lic-erro" hidden style="margin-top:10px">Sua licença será enviada pelo WhatsApp em instantes.</p>
       <p class="aviso" style="margin-top:12px">Alguma dificuldade? <a class="js-whats-modal" href="#">Fale conosco pelo WhatsApp</a>.</p>
     </div>
@@ -316,6 +317,7 @@ const JANELA = `
       $("lic-chave").value = s.licenca.chave;
       $("btn-simulador").href = (s.link_simulador || "simulador/") + "?chave=" + encodeURIComponent(s.licenca.chave);
     }
+    $("aviso-email").hidden = !s.email_enviado;
     etapa("etapa-ok");
   }
 

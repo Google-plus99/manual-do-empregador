@@ -33,6 +33,7 @@ Para um novo PDF: adicionar em `PRODUTOS` (tipo `pdf`, campo `arquivo`), criar a
   - `status-pix.js` e `webhook.js`: usam `_pedidos.js`, que grava o pedido, gera um link assinado (24 h) para cada PDF e emite a licença uma única vez.
   - `_licenca.js`: chave `RC1.<dados>.<assinatura>` (ECDSA P-256) compatível com o simulador.
   - `_supabase.js`: REST com a service_role. Sem variáveis, não grava nada e o site segue vendendo.
+  - `_email.js`: e-mail de entrega pelo Resend (API REST). Mandado uma única vez por pagamento (trava `email_enviado_em` em `pedidos` e chave de idempotência `entrega-<id>`), com links dos PDFs válidos por 7 dias e a chave de licença.
   - `contato.js`: formulários; `origem` = `site` ou `cursos`; campo invisível `site` contra robôs.
 - `supabase/schema.sql`: tabelas `pedidos` e `contatos` (RLS ligado, sem políticas públicas), bucket privado `produtos`, visão `vendas_aprovadas`. Idempotente.
 - `vercel.json`: endereços sem `.html` e redirecionamentos `/ebook`, `/manual`, `/cartilha`.
@@ -48,20 +49,21 @@ Para um novo PDF: adicionar em `PRODUTOS` (tipo `pdf`, campo `arquivo`), criar a
 - `LIC_CHAVE_PRIVADA`: chave privada JWK do gerador de licenças (par da chave pública embutida no simulador).
 - `LIC_DOMINIO`: institutofelipelopes.com.br (a licença só funciona nesse domínio).
 - `PDF_BUCKET` (opcional, padrão `produtos`).
+- `RESEND_API_KEY` e `EMAIL_REMETENTE` (ex.: `Instituto Felipe Lopes <contato@institutofelipelopes.com.br>`): ativam o e-mail de entrega. `EMAIL_RESPOSTA` opcional. Sem elas, a venda funciona e só não manda e-mail.
 
 Nunca colocar token ou chave privada no HTML nem no repositório.
 
 ## Entrega ao cliente
 
-Sem login e senha. A tela de confirmação mostra um botão de download por PDF e, se houver simulador, a chave de licença. Tudo fica gravado na tabela `pedidos`; para reenviar, buscar pelo e-mail.
+Sem login e senha. A tela de confirmação mostra um botão de download por PDF (link de 24 h) e, se houver simulador, a chave de licença. O mesmo conteúdo vai por e-mail ao comprador (links de 7 dias), inclusive se ele fechar a página antes da confirmação. Tudo fica gravado na tabela `pedidos`; para reenviar, buscar pelo e-mail.
 
 ## Pendências
 
 - Definir preços finais e prazo da licença.
-- Preencher `CONFIG.empresa` e `CONFIG.email` em `assets/app.js` e revisar termos e privacidade.
-- Confirmar o WhatsApp do Instituto (hoje é o do site antigo do Manual).
-- Confirmar que a chave pública do simulador é o par de `LIC_CHAVE_PRIVADA`.
-- Envio automático dos links e da chave por e-mail após o pagamento.
+- CNPJ fora do site por decisão do Sérgio (por enquanto). Preencher `CONFIG.empresa` e `CONFIG.email` em `assets/app.js` quando houver; revisar termos e privacidade.
+- WhatsApp: `WHATSAPP` em `assets/catalogo.js` (confirmado o número 558198590139), usado no site e no e-mail.
+- Par de chaves de licença gerado em 09/10/2026: a pública está em `simulador/index.html` (`CONFIG.chavePublica`); a privada foi entregue ao Sérgio e vai só na variável `LIC_CHAVE_PRIVADA`. Se a privada vazar, gerar um par novo (as licenças antigas deixam de valer).
+- Configurar o Resend (verificar o domínio com os registros DNS no Registro.br) para ativar o e-mail de entrega.
 - Página `/evento` do site antigo não foi migrada.
 - A biografia de Felipe no PDF do Manual diz "mais de 15 anos"; no site está "mais de 20 anos". Confirmar.
 - Revisar textos à luz do Provimento 205/2021 da OAB.

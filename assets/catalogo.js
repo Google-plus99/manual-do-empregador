@@ -16,6 +16,9 @@
 
 export const LICENCA_MESES = 12;
 
+// Contato usado no site e no e-mail de entrega (DDI + DDD, só números)
+export const WHATSAPP = "558198590139";
+
 export const PRODUTOS = {
   manual: {
     nome: "Manual do Empregador",

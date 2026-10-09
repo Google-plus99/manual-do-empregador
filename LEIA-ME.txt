@@ -22,6 +22,8 @@ Vercel (hospedagem) + Supabase (pedidos, licenças, contatos e PDFs) + Mercado P
         LIC_CHAVE_PRIVADA          chave privada JWK do gerador de licenças
         URL_SITE                   primeiro https://<projeto>.vercel.app, depois o domínio
         LIC_DOMINIO                mesmo endereço de URL_SITE, sem https://
+        RESEND_API_KEY             chave da API do Resend (e-mail de entrega)
+        EMAIL_REMETENTE            Instituto Felipe Lopes <contato@institutofelipelopes.com.br>
    c. Deployments > Redeploy.
 
 4) TESTE
@@ -34,4 +36,9 @@ Vercel (hospedagem) + Supabase (pedidos, licenças, contatos e PDFs) + Mercado P
    Atualize URL_SITE e LIC_DOMINIO e faça Redeploy.
 
 Preços, produtos e combos: assets/catalogo.js (vale para o site e para a cobrança).
-Contato, WhatsApp e dados da empresa: bloco CONFIG em assets/app.js.
+WhatsApp: assets/catalogo.js. E-mail e dados da empresa: bloco CONFIG em assets/app.js.
+
+E-MAIL DE ENTREGA (Resend)
+   resend.com > Domains > Add Domain > institutofelipelopes.com.br
+   Crie no Registro.br (Editar zona) os registros TXT/MX que o Resend mostrar e clique em Verify.
+   API Keys > Create API Key > cole em RESEND_API_KEY na Vercel e faça Redeploy.
