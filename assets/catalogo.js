@@ -43,7 +43,7 @@ export const OFERTAS = {
     itens: ["manual"],
     preco: 47,
     de: 97,
-    upgrade: "combo-empresario",
+    upgrade: "combo-gestao",
   },
   cartilha: {
     nome: "Cartilha do Bom Fornecedor",
@@ -51,27 +51,20 @@ export const OFERTAS = {
     itens: ["cartilha"],
     preco: 37,
     de: 67,
-    upgrade: "combo-empresario",
   },
   simulador: {
     nome: "Simulador Tributário Regime Certo",
     descricao: `Simulador Tributário Regime Certo (licença ${LICENCA_MESES} meses)`,
     itens: ["simulador"],
     preco: 97,
-    upgrade: "combo-completo",
+    upgrade: "combo-gestao",
   },
-  "combo-empresario": {
-    nome: "Combo Empresário Seguro",
-    descricao: "Manual do Empregador + Cartilha do Bom Fornecedor (PDF)",
-    itens: ["manual", "cartilha"],
-    preco: 67,
-    upgrade: "combo-completo",
-  },
-  "combo-completo": {
-    nome: "Combo Instituto Completo",
-    descricao: `Manual do Empregador + Cartilha do Bom Fornecedor + Simulador Regime Certo (licença ${LICENCA_MESES} meses)`,
-    itens: ["manual", "cartilha", "simulador"],
-    preco: 147,
+  // Único combo: Manual do Empregador + Simulador Tributário
+  "combo-gestao": {
+    nome: "Combo Gestão Segura",
+    descricao: `Manual do Empregador (PDF) + Simulador Tributário Regime Certo (licença ${LICENCA_MESES} meses)`,
+    itens: ["manual", "simulador"],
+    preco: 117,
   },
 };
 

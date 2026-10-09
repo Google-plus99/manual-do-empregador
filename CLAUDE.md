@@ -1,6 +1,6 @@
 # Instituto Felipe Lopes: portal de infoprodutos e cursos
 
-Portal de vendas do **Instituto Felipe Lopes** (institutofelipelopes.com.br), com uma página por produto. Hospedagem na **Vercel**, dados no **Supabase**, pagamento **Pix via Mercado Pago (Checkout Transparente)** com o QR Code exibido no próprio site. O repositório se chama `manual-do-empregador` por histórico: o projeto começou como a página de vendas desse e-book.
+Portal de vendas do **Instituto Felipe Lopes** (institutofelipelopes.com.br), com uma página por produto (Manual e Simulador oferecem o combo no fim; a Cartilha não). Hospedagem na **Vercel**, dados no **Supabase**, pagamento **Pix via Mercado Pago (Checkout Transparente)** com o QR Code exibido no próprio site. O repositório se chama `manual-do-empregador` por histórico: o projeto começou como a página de vendas desse e-book.
 
 ## Produtos
 
@@ -9,8 +9,9 @@ Portal de vendas do **Instituto Felipe Lopes** (institutofelipelopes.com.br), co
 | `manual` | PDF Manual do Empregador (Felipe Lopes e Lais Leite, 46 p.) | R$ 47 (de 97) |
 | `cartilha` | PDF Cartilha do Bom Fornecedor (Felipe Lopes Advogados, 24 p.) | R$ 37 (de 67) |
 | `simulador` | Licença do Simulador Regime Certo (Virgilio Calmon, co-autor) | R$ 97 |
-| `combo-empresario` | Manual + Cartilha | R$ 67 |
-| `combo-completo` | Manual + Cartilha + Simulador | R$ 147 |
+| `combo-gestao` | Manual + Simulador (Combo Gestão Segura) | R$ 117 |
+
+**Decisão:** os produtos são vendidos separados e o único combo é Manual + Simulador. A Cartilha é vendida só avulsa, sem combo nem oferta de upgrade.
 
 **Fonte única de preços e entregas: `assets/catalogo.js`.** É importado pelas páginas (`assets/app.js`) e pelo servidor (`api/criar-pix.js`, `api/_pedidos.js`, `api/_licenca.js`). Para mudar preço, prazo da licença (`LICENCA_MESES`) ou criar produto/combo, altere só esse arquivo. Cada oferta pode ter `upgrade`, que aparece como sugestão na janela de compra.
 
@@ -19,8 +20,8 @@ Para um novo PDF: adicionar em `PRODUTOS` (tipo `pdf`, campo `arquivo`), criar a
 ## Estrutura
 
 - Páginas (HTML estático, sem build; topo e rodapé repetidos em cada arquivo, ao mudar o menu altere todos):
-  - `index.html`: Instituto, vitrine em carrossel dos 3 produtos, combos, sobre, equipe, chamada de cursos, dúvidas, contato.
-  - `manual-do-empregador.html`, `cartilha-do-bom-fornecedor.html`, `simulador-tributario.html`: uma página por produto.
+  - `index.html`: Instituto, vitrine em carrossel dos 3 produtos, Combo Gestão Segura, sobre, equipe, chamada de cursos, dúvidas, contato.
+  - `manual-do-empregador.html`, `cartilha-do-bom-fornecedor.html`, `simulador-tributario.html`: uma página por produto (Manual e Simulador oferecem o combo no fim; a Cartilha não).
   - `cursos.html`: cursos em preparação, lista de espera (grava em `contatos` com `origem = 'cursos'`).
   - `termos.html`, `privacidade.html`: **minutas**, revisar antes de publicar.
 - `assets/estilo.css`: estilo único (cores da logo em `:root`). Fonte Saira hospedada em `assets/fontes/`.
