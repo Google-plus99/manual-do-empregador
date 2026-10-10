@@ -1,6 +1,6 @@
 INSTITUTO FELIPE LOPES: PORTAL DE INFOPRODUTOS
 Cloudflare (hospedagem, gratuita) + Supabase (pedidos, licenças, contatos e PDFs, gratuito)
-+ Mercado Pago (Checkout Pro, Pix, taxa por venda) + Resend (e-mail, gratuito)
++ Mercado Pago (Pix com QR Code no site, taxa por venda) + Resend (e-mail, gratuito)
 
 O passo a passo completo e explicado está no documento "Guia completo: colocar o portal no ar".
 Resumo:
