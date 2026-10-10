@@ -4,52 +4,41 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Regime Certo — Simulador de Planejamento Tributário</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&display=swap" rel="stylesheet">
+<link rel="icon" type="image/png" href="../assets/img/favicon.png">
+<meta name="theme-color" content="#0b0809">
 <style>
+@font-face{font-family:"Anton";src:url("../assets/fontes/anton.woff2") format("woff2");font-weight:400;font-display:swap}
+@font-face{font-family:"Saira";src:url("../assets/fontes/saira.woff2") format("woff2");font-weight:100 900;font-stretch:50% 125%;font-display:swap}
 :root{
-  --bg:#EDF0EB; --surface:#FFFFFF; --surface-2:#F6F8F5; --ink:#1C2B2D; --muted:#5A6A6B; --line:#D3DAD4;
-  --brand:#0E4F52; --brand-ink:#FFFFFF; --brand-soft:#DCEBEA;
-  --good:#276B43; --good-soft:#E1F0E6; --bad:#9E3A2B; --bad-soft:#F6E3DF; --warn:#8A5A12; --warn-soft:#F7EDD8;
-  --s1:#276B43; --s2:#6B8F2E; --s3:#0E4F52; --s4:#9E3A2B;
+  /* Mesmo padrão do portal: modo escuro com o vinho do selo e dourado */
+  --bg:#0b0809; --surface:#171113; --surface-2:#1f1619; --ink:#f3ede9; --muted:#b3a8aa; --line:rgba(255,255,255,.12);
+    --brand:#cc4560; --brand-ink:#FFFFFF; --brand-soft:rgba(155,35,53,.22);
+    --good:#55c28a; --good-soft:rgba(85,194,138,.12); --bad:#e07a5f; --bad-soft:rgba(224,122,95,.14); --warn:#c9a84c; --warn-soft:rgba(201,168,76,.14);
+    --s1:#55c28a; --s2:#c9a84c; --s3:#cc4560; --s4:#a39b9d;
+    --gold:#c9a84c;
   --radius:10px;
-  --serif:"Source Serif 4", Georgia, "Times New Roman", serif;
-  --sans:"Public Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --serif:"Anton","Bebas Neue",Impact,"Arial Narrow",sans-serif;
+  --sans:"Saira", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
-  color-scheme:light;
-}
-@media (prefers-color-scheme: dark){
-  :root:not([data-theme="light"]){
-    --bg:#121A1B; --surface:#1A2425; --surface-2:#202C2D; --ink:#E6ECEA; --muted:#9DADAB; --line:#33403F;
-    --brand:#5FB3AE; --brand-ink:#0C1717; --brand-soft:#1F3A3A;
-    --good:#6CC08E; --good-soft:#1C3326; --bad:#E08A79; --bad-soft:#3A2420; --warn:#E0B060; --warn-soft:#3A2F1C;
-    --s1:#6CC08E; --s2:#B4CF6A; --s3:#5FB3AE; --s4:#E08A79;
-    color-scheme:dark;
-  }
-}
-:root[data-theme="dark"]{
-  --bg:#121A1B; --surface:#1A2425; --surface-2:#202C2D; --ink:#E6ECEA; --muted:#9DADAB; --line:#33403F;
-  --brand:#5FB3AE; --brand-ink:#0C1717; --brand-soft:#1F3A3A;
-  --good:#6CC08E; --good-soft:#1C3326; --bad:#E08A79; --bad-soft:#3A2420; --warn:#E0B060; --warn-soft:#3A2F1C;
-  --s1:#6CC08E; --s2:#B4CF6A; --s3:#5FB3AE; --s4:#E08A79;
   color-scheme:dark;
 }
 *,*::before,*::after{box-sizing:border-box}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
-h1,h2,h3{font-family:var(--serif);font-weight:600;line-height:1.2;margin:0}
+body{margin:0;background-color:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased;
+  background-image:linear-gradient(rgba(255,255,255,.022) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.022) 1px,transparent 1px);background-size:64px 64px}
+h1,h2,h3{font-family:var(--serif);font-weight:400;text-transform:uppercase;letter-spacing:.01em;line-height:1.1;margin:0}
 button,input,select{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--brand);outline-offset:2px}
 .num{font-variant-numeric:tabular-nums}
 
 /* Top bar */
-.top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:18px clamp(16px,3vw,32px);border-bottom:1px solid var(--line);background:var(--surface)}
-.brand{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
-.brand h1{font-size:1.45rem;color:var(--brand)}
+.top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;padding:14px clamp(16px,3vw,32px);border-bottom:1px solid var(--line);background:rgba(11,8,9,.92)}
+.brand{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.brand .selo img{width:46px;height:46px;display:block}
+.brand h1{font-size:1.7rem;color:var(--ink)}
 .brand span{color:var(--muted);font-size:.9rem}
-.law{font-size:.8rem;color:var(--brand);background:var(--brand-soft);padding:5px 10px;border-radius:999px}
+.law{font-size:.74rem;color:var(--gold);background:transparent;border:1px solid rgba(201,168,76,.45);padding:5px 12px;border-radius:999px;letter-spacing:.04em}
 
 /* Layout */
 .app{display:grid;grid-template-columns:minmax(320px,410px) minmax(0,1fr);gap:clamp(16px,2.5vw,28px);padding:clamp(16px,2.5vw,28px);max-width:1440px;margin:0 auto}
@@ -59,7 +48,7 @@ aside.form{padding:6px 0;align-self:start}
 @media (min-width:921px){aside.form{position:sticky;top:16px;max-height:calc(100vh - 32px);overflow:auto}}
 fieldset{border:0;margin:0;padding:18px 20px;border-bottom:1px solid var(--line)}
 fieldset:last-of-type{border-bottom:0}
-legend{font-family:var(--serif);font-weight:600;font-size:1.05rem;padding:0;margin-bottom:12px;float:left;width:100%}
+legend{font-family:var(--serif);font-weight:400;text-transform:uppercase;letter-spacing:.02em;font-size:1.2rem;padding:0;margin-bottom:12px;float:left;width:100%}
 legend + *{clear:both}
 label.f{display:block;margin-top:12px}
 label.f:first-of-type{margin-top:0}
@@ -204,7 +193,8 @@ legend .info{margin-left:8px;position:relative;top:-1px}
 @media (prefers-reduced-motion: no-preference){ .meter i{transition:width .4s ease} }
 
 @media print{
-  :root{--bg:#fff;--surface:#fff;--surface-2:#f4f6f4;--ink:#111;--muted:#555;--line:#ccc}
+  :root{--bg:#fff;--surface:#fff;--surface-2:#f4f6f4;--ink:#111;--muted:#555;--line:#ccc;--brand:#9b2335;--brand-soft:#f3e3e6;--good:#1f6b45;--good-soft:#e6f2ec;--bad:#9e2b3a;--warn:#8a5a12;--s1:#1f6b45;--s2:#8a6a12;--s3:#9b2335;--s4:#666;color-scheme:light}
+  body{background:#fff;background-image:none}
   body{font-size:11px}
   .top .law,aside.form,.no-print,footer,.toast{display:none!important}
   .app{display:block;padding:0}
@@ -222,8 +212,9 @@ legend .info{margin-left:8px;position:relative;top:-1px}
 .lic .linkbtn{font-size:.8rem;margin-left:6px}
 .gate{position:fixed;inset:0;z-index:80;background:var(--bg);overflow:auto;display:grid;place-items:center;padding:calc(24px + env(safe-area-inset-top,0px)) 16px calc(24px + env(safe-area-inset-bottom,0px))}
 .gate[hidden],.modal[hidden]{display:none}
-.gate-box{width:100%;max-width:470px;background:var(--surface);border:1px solid var(--line);border-top:6px solid var(--brand);border-radius:var(--radius);padding:clamp(20px,4vw,32px)}
-.gate-box .mark{font-family:var(--serif);font-weight:700;color:var(--brand);font-size:1.05rem;margin-bottom:18px}
+.gate-box{width:100%;max-width:470px;background:var(--surface);border:1px solid var(--line);border-top:4px solid var(--brand);border-radius:var(--radius);padding:clamp(20px,4vw,32px)}
+.gate-box .mark{font-family:var(--serif);font-weight:400;text-transform:uppercase;color:var(--gold);letter-spacing:.06em;font-size:1.05rem;margin-bottom:18px;display:flex;align-items:center;gap:10px}
+.gate-box .mark img{width:40px;height:40px}
 .gate-box h2{font-size:1.6rem;margin-bottom:6px}
 .gate-box > p{color:var(--muted);font-size:.9rem;margin:0 0 16px}
 textarea{width:100%;min-height:104px;padding:9px 11px;border:1px solid var(--line);border-radius:8px;background:var(--surface-2);color:var(--ink);font:500 .78rem/1.45 ui-monospace,SFMono-Regular,Consolas,monospace;resize:vertical;word-break:break-all}
@@ -249,7 +240,7 @@ textarea:focus{border-color:var(--brand);background:var(--surface)}
 .locked{filter:blur(5px);opacity:.7;pointer-events:none;user-select:none;max-height:560px;overflow:hidden;-webkit-mask-image:linear-gradient(#000 45%,transparent);mask-image:linear-gradient(#000 45%,transparent);display:grid;gap:clamp(16px,2vw,24px)}
 .limits ul{margin:8px 0 4px;padding-left:20px;font-size:.84rem}
 .limits li{margin:4px 0}
-.btn.wa{text-decoration:none;display:inline-block;background:var(--good);border-color:var(--good);color:#fff}
+.btn.wa{text-decoration:none;display:inline-block;background:var(--good);border-color:var(--good);color:#0b0809}
 #btnWaTop{padding:8px 14px;font-size:.88rem}
 #btnWaTop[hidden]{display:none}
 .cta-box{display:flex;align-items:center;justify-content:space-between;gap:14px 20px;flex-wrap:wrap;border-left:6px solid var(--good)}
@@ -261,7 +252,7 @@ textarea:focus{border-color:var(--brand);background:var(--surface)}
 .lead-actions{display:flex;align-items:center;gap:10px 18px;flex-wrap:wrap}
 .locked-wrap{position:relative}
 .locked-wrap .locked{max-height:620px}
-.lock-tag{position:absolute;left:50%;top:120px;transform:translateX(-50%);background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:8px 16px;font-size:.84rem;font-weight:600;color:var(--brand);white-space:nowrap;box-shadow:0 4px 14px rgba(0,0,0,.08)}
+.lock-tag{position:absolute;left:50%;top:120px;transform:translateX(-50%);background:var(--surface-2);border:1px solid var(--line);border-radius:999px;padding:8px 16px;font-size:.84rem;font-weight:600;color:var(--brand);white-space:nowrap;box-shadow:0 4px 14px rgba(0,0,0,.08)}
 .sk-card{padding:18px;display:grid;gap:10px}
 .sk{display:block;height:12px;border-radius:6px;background:var(--line)}
 .sk.tall{height:28px}
@@ -278,6 +269,7 @@ footer .linkbtn{font-size:.78rem;font-weight:600;text-decoration:underline;text-
 
 <header class="top">
   <div class="brand">
+    <a class="selo" href="../index.html" aria-label="Voltar ao portal do Instituto Felipe Lopes"><img src="../assets/img/logo-selo-pequeno.png" alt="" width="46" height="46"></a>
     <h1>Regime Certo</h1>
     <span>Simulador de planejamento tributário 2026 a 2033</span>
   </div>
@@ -409,7 +401,7 @@ footer .linkbtn{font-size:.78rem;font-weight:600;text-decoration:underline;text-
 
 <div class="gate" id="gateLic" hidden role="dialog" aria-modal="true" aria-labelledby="gateLicT">
   <div class="gate-box">
-    <div class="mark">Regime Certo</div>
+    <div class="mark"><img src="../assets/img/logo-selo-pequeno.png" alt="" width="40" height="40"><span>Regime Certo</span></div>
     <h2 id="gateLicT">Ative sua licença</h2>
     <p>Cole a chave de licença que você recebeu. A ativação vale para este navegador.</p>
     <label class="f"><div class="lbl">Chave de licença</div><textarea id="licKey" spellcheck="false" autocomplete="off" autocapitalize="off" placeholder="RC1.…"></textarea></label>
@@ -1479,7 +1471,7 @@ async function enviarLead(){
 async function boot(){
   document.title=`${CONFIG.produto} — Simulador de Planejamento Tributário`;
   document.querySelector('.brand h1').textContent=CONFIG.produto;
-  document.querySelector('.gate-box .mark').textContent=CONFIG.produto;
+  document.querySelector('.gate-box .mark span').textContent=CONFIG.produto;
   document.addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('[data-terms]'); if(t){e.preventDefault(); abrirTermos();}});
   $('termosX').onclick=fecharTermos;
   $('termos').addEventListener('click',e=>{if(e.target.id==='termos') fecharTermos()});
