@@ -1,9 +1,18 @@
 INSTITUTO FELIPE LOPES: PORTAL DE INFOPRODUTOS
-Vercel (hospedagem) + Supabase (pedidos, licenças, contatos e PDFs) + Mercado Pago (Pix)
+Vercel (hospedagem) + Supabase (pedidos, licenças, contatos e PDFs) + Mercado Pago (Checkout Pro, Pix)
+
+COMO FUNCIONA A COMPRA (modo atual)
+   O cliente preenche nome e e-mail no site e é levado à página do Mercado Pago para pagar com Pix.
+   Depois do pagamento ele volta para /obrigado, onde aparecem os downloads e a chave do simulador.
+   O mesmo conteúdo vai por e-mail. O QR Code dentro do próprio site fica pronto para depois:
+   basta trocar pagamento: "checkout" por pagamento: "pix-no-site" no bloco CONFIG de assets/app.js
+   e criar a aplicação "Checkout Transparente" no Mercado Pago.
 
 1) MERCADO PAGO
-   Suas integrações > Criar aplicação > Checkout Transparente > Ativar credenciais de produção.
+   Suas integrações > Criar aplicação > tipo de pagamento "Pagamentos online",
+   sem plataforma de e-commerce, produto "Checkout Pro" > Ativar credenciais de produção.
    Copie o Access Token (APP_USR-...). A conta precisa ter chave Pix cadastrada.
+   Para aceitar também cartão e boleto, troque FORMAS = "pix" por FORMAS = "todas" em api/criar-pagamento.js.
 
 2) SUPABASE
    a. Crie um projeto (região South America, São Paulo).
@@ -25,10 +34,13 @@ Vercel (hospedagem) + Supabase (pedidos, licenças, contatos e PDFs) + Mercado P
         RESEND_API_KEY             chave da API do Resend (e-mail de entrega)
         EMAIL_REMETENTE            Instituto Felipe Lopes <contato@institutofelipelopes.com.br>
    c. Deployments > Redeploy.
+   URL_SITE é usado para o retorno ao site (/obrigado) e para o aviso do pagamento (/api/webhook).
 
 4) TESTE
-   Peça para colocar os preços em R$ 1,00 (assets/catalogo.js), compre cada oferta com seu Pix
-   e confira em Supabase > Table Editor > pedidos.
+   Peça para colocar os preços em R$ 1,00 (assets/catalogo.js), compre cada oferta:
+   o site leva ao Mercado Pago, pague o Pix, volte ao site em /obrigado e confira os downloads,
+   a chave do simulador, o e-mail recebido e Supabase > Table Editor > pedidos.
+   Se fechar a página antes de voltar, a entrega chega igual por e-mail.
 
 5) DOMÍNIO institutofelipelopes.com.br
    Vercel > Settings > Domains > adicione institutofelipelopes.com.br e www.institutofelipelopes.com.br.
@@ -36,7 +48,7 @@ Vercel (hospedagem) + Supabase (pedidos, licenças, contatos e PDFs) + Mercado P
    Atualize URL_SITE e LIC_DOMINIO e faça Redeploy.
 
 Preços, produtos e combos: assets/catalogo.js (vale para o site e para a cobrança).
-WhatsApp: assets/catalogo.js. E-mail e dados da empresa: bloco CONFIG em assets/app.js.
+WhatsApp: assets/catalogo.js. E-mail, dados da empresa e modo de pagamento: bloco CONFIG em assets/app.js.
 
 E-MAIL DE ENTREGA (Resend)
    resend.com > Domains > Add Domain > institutofelipelopes.com.br

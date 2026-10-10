@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pagamento | Instituto Felipe Lopes</title>
+<meta name="description" content="Confirmação de pagamento e acesso aos produtos do Instituto Felipe Lopes.">
+<meta property="og:title" content="Pagamento | Instituto Felipe Lopes">
+<meta property="og:description" content="Confirmação de pagamento e acesso aos produtos do Instituto Felipe Lopes.">
+<meta property="og:type" content="website">
+<meta property="og:image" content="assets/img/logo-selo.png">
+<meta name="theme-color" content="#0b0809">
+<link rel="icon" type="image/png" href="assets/img/favicon.png">
+<link rel="apple-touch-icon" href="assets/img/apple-touch-icon.png">
+<link rel="preload" href="assets/fontes/saira.woff2" as="font" type="font/woff2" crossorigin>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="assets/estilo.css">
+<script type="module" src="assets/app.js"></script>
+</head>
+<body>
+<a class="pular" href="#conteudo">Pular para o conteúdo</a>
+
+<header class="topo">
+  <div class="container">
+    <a class="marca" href="index.html" aria-label="Instituto Felipe Lopes, página inicial">
+      <img src="assets/img/logo-selo-pequeno.png" alt="" width="50" height="50">
+      <span><small>INSTITUTO</small><b>FELIPE LOPES</b></span>
+    </a>
+    <nav aria-label="Principal">
+      <ul class="menu">
+        <li><a href="index.html">Início</a></li>
+        <li><a href="manual-do-empregador.html">Manual do Empregador</a></li>
+        <li><a href="cartilha-do-bom-fornecedor.html">Cartilha do Bom Fornecedor</a></li>
+        <li><a href="simulador-tributario.html">Simulador Tributário</a></li>
+        <li><a href="cursos.html">Cursos</a></li>
+      </ul>
+    </nav>
+    <a class="btn acao-topo" href="index.html#precos">Ver preços</a>
+    <button class="abrir-menu" type="button" aria-label="Abrir menu" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
+  </div>
+</header>
+
+<main id="conteudo">
+
+<section class="obrigado" id="pagina-obrigado">
+  <div class="container">
+    <div class="caixa-obrigado">
+      <div class="demo-aviso" id="demo-obg" hidden>Pré-visualização: esta é a tela que o cliente vê ao voltar do Mercado Pago. No site publicado, o pagamento é real.</div>
+
+      <div id="obg-carregando">
+        <h1>Confirmando seu pagamento</h1>
+        <div class="aguardando" aria-live="polite"><i></i><span>Consultando o Mercado Pago...</span></div>
+      </div>
+
+      <div id="obg-pendente" hidden>
+        <h1>Aguardando a <span class="v">confirmação do Pix</span></h1>
+        <p class="intro">Assim que o Mercado Pago confirmar o pagamento, esta página libera o seu acesso sozinha. Isso costuma levar poucos segundos.</p>
+        <div class="aguardando" aria-live="polite"><i></i><span>Aguardando o pagamento...</span></div>
+        <p class="aviso">Pode fechar esta página se quiser: o acesso também é enviado para o seu e-mail.</p>
+      </div>
+
+      <div id="obg-aprovado" class="ok" hidden>
+        <div class="icone" aria-hidden="true">✓</div>
+        <h1>Pagamento <span class="v">confirmado</span></h1>
+        <p class="intro">Obrigado pela compra. Seu acesso já está liberado.</p>
+        <div class="entregas" id="entregas"></div>
+        <div class="licenca" id="bloco-licenca" hidden>
+          <p><b>Sua licença do Simulador Regime Certo</b><br>Nº <span id="lic-numero"></span>, válida até <span id="lic-venc"></span></p>
+          <textarea id="lic-chave" readonly aria-label="Chave de licença"></textarea>
+          <div class="botoes">
+            <button class="btn btn-contorno" type="button" id="btn-copiar-lic">Copiar chave</button>
+            <a class="btn" id="btn-simulador" href="simulador/" target="_blank" rel="noopener">Abrir simulador</a>
+          </div>
+          <p class="aviso" style="margin-top:10px">Guarde esta chave. Você vai precisar dela se acessar o simulador em outro navegador.</p>
+        </div>
+        <p class="aviso" id="aviso-email" hidden>Também enviamos tudo para o seu e-mail. Confira a caixa de entrada e o spam.</p>
+        <p class="aviso">Os links desta página valem por 24 horas. Baixe e guarde os arquivos.</p>
+        <p class="aviso" id="lic-erro" hidden>Sua licença será enviada pelo WhatsApp em instantes.</p>
+      </div>
+
+      <div id="obg-email" hidden>
+        <h1>Confirme o seu <span class="v">e-mail</span></h1>
+        <p class="intro">O pagamento foi aprovado. Para liberar o acesso nesta página, informe o mesmo e-mail usado na compra.</p>
+        <form id="form-confirma-email">
+          <label>E-mail da compra <em>*</em><input name="email" type="email" required autocomplete="email"></label>
+          <button class="btn" type="submit">Liberar acesso</button>
+        </form>
+      </div>
+
+      <div id="obg-recusado" hidden>
+        <h1>Pagamento <span class="v">não concluído</span></h1>
+        <p class="intro">O pagamento não foi aprovado ou foi cancelado. Nenhum valor foi cobrado. Você pode tentar de novo pela página de preços.</p>
+        <div class="botoes"><a class="btn" href="index.html#precos">Ver os preços</a></div>
+      </div>
+
+      <p class="aviso" style="margin-top:24px">Alguma dificuldade? <a class="js-whats-obg" href="#">Fale conosco pelo WhatsApp</a>.</p>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="grade">
+      <div>
+        <img class="logo-rodape" src="assets/img/logo-selo.png" alt="Instituto Felipe Lopes" width="130" height="130" loading="lazy">
+      </div>
+      <div>
+        <h4>Produtos</h4>
+        <a href="manual-do-empregador.html">Manual do Empregador</a>
+        <a href="cartilha-do-bom-fornecedor.html">Cartilha do Bom Fornecedor</a>
+        <a href="simulador-tributario.html">Simulador Tributário</a>
+        <a href="index.html#precos">Preços</a>
+        <a href="cursos.html">Cursos</a>
+      </div>
+      <div>
+        <h4>Atendimento</h4>
+        <a class="js-whats" href="#">WhatsApp</a>
+        <a data-email href="#"></a>
+        <a href="index.html#duvidas">Dúvidas frequentes</a>
+        <a href="simulador/">Acessar o simulador</a>
+      </div>
+      <div>
+        <h4>Informações</h4>
+        <a href="termos.html">Termos de compra e uso</a>
+        <a href="privacidade.html">Política de privacidade</a>
+        <a href="index.html#instituto">Sobre o Instituto</a>
+      </div>
+    </div>
+    <div class="legal">
+      <span>© 2026 Instituto Felipe Lopes. Todos os direitos reservados.</span>
+      <span data-empresa></span>
+    </div>
+  </div>
+</footer>
+
+<a class="flutuante js-whats" href="#" aria-label="Falar pelo WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.2.6a2.7 2.7 0 0 0 1.8-1.2 2.2 2.2 0 0 0 .1-1.3c0-.1-.2-.2-.4-.3Z"/></svg><span>Falar com a equipe</span></a>
+</body>
+</html>

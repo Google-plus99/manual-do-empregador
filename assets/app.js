@@ -16,7 +16,12 @@ const CONFIG = {
   // Identificação exigida para vendas online (Decreto 7.962/2013). Preencha antes de publicar.
   empresa: { razao: "", cnpj: "", endereco: "" },
 
-  // Fora destes endereços, a compra entra em modo pré-visualização (Pix simulado)
+  // Forma de pagamento:
+  //   "checkout"    = o cliente é levado à página do Mercado Pago para pagar (Checkout Pro)
+  //   "pix-no-site" = o QR Code Pix aparece na própria página (Checkout Transparente)
+  pagamento: "checkout",
+
+  // Fora destes endereços, a compra entra em modo pré-visualização (pagamento simulado)
   dominiosReais: ["institutofelipelopes.com.br", "vercel.app"],
 };
 /* ==================================================================== */
@@ -27,6 +32,47 @@ const inteiro = v => Number(v).toLocaleString("pt-BR", { maximumFractionDigits: 
 const textoLicenca = `${LICENCA_MESES} meses`;
 const linkWhats = (msg = CONFIG.mensagemWhats) => `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(msg)}`;
 const DEMO = !CONFIG.dominiosReais.some(d => location.hostname === d || location.hostname.endsWith("." + d));
+const CHECKOUT = CONFIG.pagamento === "checkout";
+const guardar = (k, v) => { try { sessionStorage.setItem(k, JSON.stringify(v)); } catch (_) {} };
+const ler = k => { try { return JSON.parse(sessionStorage.getItem(k) || "null"); } catch (_) { return null; } };
+
+/* ---------- entrega (usada na janela de compra e na página de retorno) ---------- */
+function renderEntrega(s) {
+  const caixa = $("entregas");
+  caixa.innerHTML = "";
+  (s.downloads || []).forEach(d => {
+    const a = document.createElement("a");
+    a.className = "btn";
+    a.rel = "noopener"; a.target = "_blank";
+    if (d.url) { a.href = d.url; a.textContent = `Baixar ${d.titulo}`; }
+    else { a.href = linkWhats(`Olá! Paguei e preciso receber o arquivo ${d.titulo}.`); a.textContent = `Receber ${d.titulo} pelo WhatsApp`; }
+    caixa.appendChild(a);
+  });
+  const temSim = OFERTAS[s.oferta]?.itens.includes("simulador");
+  $("bloco-licenca").hidden = !(temSim && s.licenca);
+  $("lic-erro").hidden = !(temSim && !s.licenca);
+  if (temSim && s.licenca) {
+    $("lic-numero").textContent = s.licenca.numero;
+    $("lic-venc").textContent = String(s.licenca.vencimento).split("-").reverse().join("/");
+    $("lic-chave").value = s.licenca.chave;
+    $("btn-simulador").href = (s.link_simulador || "simulador/") + "?chave=" + encodeURIComponent(s.licenca.chave);
+  }
+  $("aviso-email").hidden = !s.email_enviado;
+}
+async function copiar(campo, btn, rotulo) {
+  try { await navigator.clipboard.writeText(campo.value); }
+  catch (_) { campo.select(); document.execCommand("copy"); }
+  btn.textContent = "Copiado";
+  setTimeout(() => (btn.textContent = rotulo), 2000);
+}
+const entregaDemo = id => {
+  const o = OFERTAS[id];
+  return {
+    status: "approved", oferta: id,
+    downloads: o.itens.filter(i => PRODUTOS[i].tipo === "pdf").map(i => ({ produto: i, titulo: PRODUTOS[i].nome, url: "#" })),
+    licenca: o.itens.includes("simulador") ? { numero: "RC-261010-DEMO", vencimento: "2027-10-10", chave: "RC1.EXEMPLO-DE-CHAVE-GERADA-AUTOMATICAMENTE-APOS-O-PAGAMENTO" } : null,
+  };
+};
 
 /* ---------- preços e textos do catálogo ---------- */
 document.querySelectorAll("[data-preco]").forEach(el => (el.textContent = inteiro(OFERTAS[el.dataset.preco].preco)));
@@ -131,7 +177,7 @@ const JANELA = `
 <div class="modal" id="modal-pix" role="dialog" aria-modal="true" aria-labelledby="pix-titulo">
   <div class="janela">
     <button class="fechar" type="button" aria-label="Fechar" data-fechar>&times;</button>
-    <div class="demo-aviso" id="demo-aviso" hidden>Pré-visualização: o QR Code e a confirmação são simulados. No site publicado, a cobrança é real.</div>
+    <div class="demo-aviso" id="demo-aviso" hidden>Pré-visualização: o pagamento é simulado. No site publicado, a cobrança é real.</div>
 
     <div class="etapa ativa" id="etapa-dados">
       <h3 id="pix-titulo">Finalizar compra</h3>
@@ -139,11 +185,11 @@ const JANELA = `
       <form id="form-pix" novalidate>
         <label>Nome completo <em>*</em><input name="nome" required autocomplete="name"></label>
         <label>E-mail <em>*</em><input name="email" type="email" required autocomplete="email"></label>
-        <label>CPF <em>*</em><input name="cpf" inputmode="numeric" required maxlength="14" placeholder="000.000.000-00"></label>
+        <label id="campo-cpf">CPF <em>*</em><input name="cpf" inputmode="numeric" maxlength="14" placeholder="000.000.000-00"></label>
         <label class="upgrade" id="upgrade" hidden><input type="checkbox" id="upgrade-check"><div><b id="upgrade-titulo"></b><span id="upgrade-texto"></span></div></label>
         <p class="erro" id="pix-erro" role="alert"></p>
         <button class="btn" type="submit" id="btn-gerar">Gerar QR Code Pix</button>
-        <p class="aviso">O CPF é exigido pelo Mercado Pago para emitir a cobrança Pix. A licença do simulador, quando incluída, sai no nome informado.</p>
+        <p class="aviso" id="aviso-pagamento">O CPF é exigido pelo Mercado Pago para emitir a cobrança Pix. A licença do simulador, quando incluída, sai no nome informado.</p>
       </form>
     </div>
 
@@ -200,6 +246,13 @@ const JANELA = `
   const upgrade = $("upgrade"), upgradeCheck = $("upgrade-check");
   let inicial = null, consulta = null, relogio = null, ultimoFoco = null;
 
+  const rotuloBotao = CHECKOUT ? "Continuar para o pagamento" : "Gerar QR Code Pix";
+  if (CHECKOUT) {
+    $("campo-cpf").hidden = true;
+    $("aviso-pagamento").textContent = "Você será levado ao site do Mercado Pago para pagar com Pix. Depois do pagamento, volta para cá e recebe o acesso, que também vai para o seu e-mail. A licença do simulador, quando incluída, sai no nome informado.";
+  }
+  btnGerar.textContent = rotuloBotao;
+
   const ofertaAtual = () => (upgradeCheck.checked && OFERTAS[inicial].upgrade) ? OFERTAS[inicial].upgrade : inicial;
   const nomesItens = itens => itens.map(i => PRODUTOS[i].nome);
 
@@ -254,20 +307,30 @@ const JANELA = `
     erro.textContent = "";
     if (form.nome.value.trim().split(/\s+/).length < 2) { erro.textContent = "Informe nome e sobrenome."; return; }
     if (!form.email.value || !form.email.checkValidity()) { erro.textContent = "Informe um e-mail válido."; return; }
-    if (form.cpf.value.replace(/\D/g, "").length !== 11) { erro.textContent = "Informe o CPF completo."; return; }
+    if (!CHECKOUT && form.cpf.value.replace(/\D/g, "").length !== 11) { erro.textContent = "Informe o CPF completo."; return; }
 
-    btnGerar.disabled = true; btnGerar.textContent = "Gerando Pix...";
-    const dados = { nome: form.nome.value, email: form.email.value, cpf: form.cpf.value, oferta: ofertaAtual() };
+    btnGerar.disabled = true; btnGerar.textContent = CHECKOUT ? "Abrindo o Mercado Pago..." : "Gerando Pix...";
+    const dados = { nome: form.nome.value.trim(), email: form.email.value.trim(), cpf: form.cpf.value, oferta: ofertaAtual() };
+    guardar("ifl-compra", { email: dados.email, oferta: dados.oferta });
     try {
+      if (CHECKOUT) {
+        // Checkout Pro: cria a preferência e leva o cliente à página do Mercado Pago
+        if (DEMO) { await new Promise(r => setTimeout(r, 500)); location.href = `obrigado.html?demo=1&oferta=${encodeURIComponent(dados.oferta)}`; return; }
+        const r = await fetch("api/criar-pagamento", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(dados) });
+        const d = await r.json();
+        if (!r.ok || !d.url) throw new Error(d.erro || "Não foi possível abrir o pagamento.");
+        location.href = d.url;
+        return;
+      }
       if (DEMO) { await new Promise(r => setTimeout(r, 600)); mostrarQr(pixDemo(dados.oferta)); return; }
       const r = await fetch("api/criar-pix", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(dados) });
       const d = await r.json();
       if (!r.ok) throw new Error(d.erro || "Não foi possível gerar o Pix.");
       mostrarQr(d);
     } catch (err) {
-      erro.textContent = err.message || "Não foi possível gerar o Pix. Tente novamente.";
+      erro.textContent = err.message || "Não foi possível iniciar o pagamento. Tente novamente.";
     } finally {
-      btnGerar.disabled = false; btnGerar.textContent = "Gerar QR Code Pix";
+      btnGerar.disabled = false; btnGerar.textContent = rotuloBotao;
     }
   });
 
@@ -289,7 +352,7 @@ const JANELA = `
 
     consulta = setInterval(async () => {
       try {
-        const r = await fetch("api/status-pix?id=" + encodeURIComponent(d.id));
+        const r = await fetch("api/status-pix?id=" + encodeURIComponent(d.id) + "&email=" + encodeURIComponent(form.email.value.trim()));
         const s = await r.json();
         if (s.status === "approved") { parar(); aprovado(s); }
         else if (["cancelled", "rejected", "expired"].includes(s.status)) { parar(); etapa("etapa-expirado"); }
@@ -298,37 +361,12 @@ const JANELA = `
   }
 
   function aprovado(s) {
-    const caixa = $("entregas");
-    caixa.innerHTML = "";
-    (s.downloads || []).forEach(d => {
-      const a = document.createElement("a");
-      a.className = "btn";
-      a.rel = "noopener"; a.target = "_blank";
-      if (d.url) { a.href = d.url; a.textContent = `Baixar ${d.titulo}`; }
-      else { a.href = linkWhats(`Olá! Paguei e preciso receber o arquivo ${d.titulo}.`); a.textContent = `Receber ${d.titulo} pelo WhatsApp`; }
-      caixa.appendChild(a);
-    });
-    const temSim = OFERTAS[s.oferta]?.itens.includes("simulador");
-    $("bloco-licenca").hidden = !(temSim && s.licenca);
-    $("lic-erro").hidden = !(temSim && !s.licenca);
-    if (temSim && s.licenca) {
-      $("lic-numero").textContent = s.licenca.numero;
-      $("lic-venc").textContent = String(s.licenca.vencimento).split("-").reverse().join("/");
-      $("lic-chave").value = s.licenca.chave;
-      $("btn-simulador").href = (s.link_simulador || "simulador/") + "?chave=" + encodeURIComponent(s.licenca.chave);
-    }
-    $("aviso-email").hidden = !s.email_enviado;
+    renderEntrega(s);
     etapa("etapa-ok");
   }
 
   $("btn-copiar").addEventListener("click", () => copiar($("pix-codigo"), $("btn-copiar"), "Copiar"));
   $("btn-copiar-lic").addEventListener("click", () => copiar($("lic-chave"), $("btn-copiar-lic"), "Copiar chave"));
-  async function copiar(campo, btn, rotulo) {
-    try { await navigator.clipboard.writeText(campo.value); }
-    catch (_) { campo.select(); document.execCommand("copy"); }
-    btn.textContent = "Copiado";
-    setTimeout(() => (btn.textContent = rotulo), 2000);
-  }
 
   /* ---------- pré-visualização (sem cobrança real) ---------- */
   function pixDemo(id) {
@@ -342,13 +380,55 @@ const JANELA = `
     return { id: "demo", oferta: id, valor: OFERTAS[id].preco, qr_code_base64: "data:image/svg+xml;base64," + btoa(svg),
       qr_code: "00020126580014BR.GOV.BCB.PIX-EXEMPLO-DE-PRE-VISUALIZACAO", expira_em: new Date(Date.now() + 30 * 60000).toISOString() };
   }
-  $("btn-simular-pago").addEventListener("click", () => {
-    parar();
-    const id = ofertaAtual(), o = OFERTAS[id];
-    aprovado({
-      status: "approved", oferta: id,
-      downloads: o.itens.filter(i => PRODUTOS[i].tipo === "pdf").map(i => ({ produto: i, titulo: PRODUTOS[i].nome, url: "#" })),
-      licenca: o.itens.includes("simulador") ? { numero: "RC-261009-DEMO", vencimento: "2027-10-09", chave: "RC1.EXEMPLO-DE-CHAVE-GERADA-AUTOMATICAMENTE-APOS-O-PAGAMENTO" } : null,
-    });
+  $("btn-simular-pago").addEventListener("click", () => { parar(); aprovado(entregaDemo(ofertaAtual())); });
+})();
+
+/* ====================================================================
+   PÁGINA DE RETORNO DO MERCADO PAGO (obrigado.html)
+   O Mercado Pago devolve o cliente com ?payment_id=...&status=...
+   A página consulta o pagamento e mostra a entrega quando aprovado.
+   ==================================================================== */
+(() => {
+  const pagina = $("pagina-obrigado");
+  if (!pagina) return;
+  const q = new URLSearchParams(location.search);
+  const id = (q.get("payment_id") || q.get("collection_id") || "").replace(/\D/g, "");
+  const salvo = ler("ifl-compra") || {};
+  const estados = ["obg-carregando", "obg-pendente", "obg-aprovado", "obg-recusado", "obg-email"];
+  const mostrar = e => estados.forEach(x => { const el = $(x); if (el) el.hidden = x !== e; });
+  $("btn-copiar-lic").addEventListener("click", () => copiar($("lic-chave"), $("btn-copiar-lic"), "Copiar chave"));
+  document.querySelectorAll(".js-whats-obg").forEach(a => { a.href = linkWhats("Olá! Fiz um pagamento no site do Instituto e preciso de ajuda com o acesso."); a.target = "_blank"; a.rel = "noopener"; });
+
+  if (q.get("demo") && OFERTAS[q.get("oferta")]) {
+    $("demo-obg").hidden = false;
+    renderEntrega(entregaDemo(q.get("oferta")));
+    mostrar("obg-aprovado");
+    return;
+  }
+  if (!id) { mostrar("obg-recusado"); return; }
+
+  let email = salvo.email || "";
+  let tentativas = 0, timer = null;
+  async function consultar() {
+    tentativas++;
+    try {
+      const r = await fetch(`api/status-pix?id=${id}&email=${encodeURIComponent(email)}`, { cache: "no-store" });
+      const s = await r.json();
+      if (s.status === "approved") {
+        if (s.confirme_email) { mostrar("obg-email"); return; }
+        renderEntrega(s); mostrar("obg-aprovado"); return;
+      }
+      if (["rejected", "cancelled", "refunded", "charged_back"].includes(s.status)) { mostrar("obg-recusado"); return; }
+      mostrar("obg-pendente");
+    } catch (_) { mostrar("obg-pendente"); }
+    if (tentativas < 120) timer = setTimeout(consultar, 5000); // até 10 minutos
+  }
+  $("form-confirma-email").addEventListener("submit", e => {
+    e.preventDefault();
+    email = e.target.email.value.trim();
+    guardar("ifl-compra", { ...salvo, email });
+    clearTimeout(timer); tentativas = 0; mostrar("obg-carregando"); consultar();
   });
+  mostrar("obg-carregando");
+  consultar();
 })();
