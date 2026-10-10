@@ -1,0 +1,17 @@
+# Arquivos que NÃO são publicados como páginas do site (mesmo formato do .gitignore)
+servidor/
+supabase/
+referencias/
+node_modules/
+.git/
+.github/
+.wrangler/
+CLAUDE.md
+LEIA-ME.txt
+package.json
+package-lock.json
+wrangler.jsonc
+.assetsignore
+.gitignore
+_redirects
+_headers

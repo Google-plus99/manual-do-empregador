@@ -1,6 +1,6 @@
 # Instituto Felipe Lopes: portal de infoprodutos e cursos
 
-Portal de vendas do **Instituto Felipe Lopes** (institutofelipelopes.com.br), com uma página por produto (Manual e Simulador oferecem o combo no fim; a Cartilha não). Hospedagem na **Vercel**, dados no **Supabase**, pagamento **Pix via Mercado Pago, hoje pelo Checkout Pro** (o cliente é levado à página do Mercado Pago e volta para `/obrigado`). O modo com QR Code no próprio site (Checkout Transparente) está pronto e desligado, para uso futuro. O repositório se chama `manual-do-empregador` por histórico: o projeto começou como a página de vendas desse e-book.
+Portal de vendas do **Instituto Felipe Lopes** (institutofelipelopes.com.br), com uma página por produto (Manual e Simulador oferecem o combo no fim; a Cartilha não). Hospedagem na **Cloudflare (Workers, plano gratuito)**, dados no **Supabase**, pagamento **Pix via Mercado Pago, hoje pelo Checkout Pro** (o cliente é levado à página do Mercado Pago e volta para `/obrigado`). O modo com QR Code no próprio site (Checkout Transparente) está pronto e desligado, para uso futuro. O repositório se chama `manual-do-empregador` por histórico: o projeto começou como a página de vendas desse e-book.
 
 ## Produtos
 
@@ -13,7 +13,7 @@ Portal de vendas do **Instituto Felipe Lopes** (institutofelipelopes.com.br), co
 
 **Decisão:** os produtos são vendidos separados e o único combo é Manual + Simulador. A Cartilha é vendida só avulsa, sem combo nem oferta de upgrade.
 
-**Fonte única de preços e entregas: `assets/catalogo.js`.** É importado pelas páginas (`assets/app.js`) e pelo servidor (`api/criar-pagamento.js`, `api/criar-pix.js`, `api/_pedidos.js`, `api/_licenca.js`). Para mudar preço, prazo da licença (`LICENCA_MESES`) ou criar produto/combo, altere só esse arquivo. Cada oferta pode ter `upgrade`, que aparece como sugestão na janela de compra.
+**Fonte única de preços e entregas: `assets/catalogo.js`.** É importado pelas páginas (`assets/app.js`) e pelo servidor (`servidor/rotas/criar-pagamento.js`, `servidor/rotas/criar-pix.js`, `servidor/pedidos.js`, `servidor/licenca.js`). Para mudar preço, prazo da licença (`LICENCA_MESES`) ou criar produto/combo, altere só esse arquivo. Cada oferta pode ter `upgrade`, que aparece como sugestão na janela de compra.
 
 Para um novo PDF: adicionar em `PRODUTOS` (tipo `pdf`, campo `arquivo`), criar a oferta em `OFERTAS`, enviar o PDF ao bucket `produtos` do Supabase com o mesmo nome e criar a página do produto.
 
@@ -29,25 +29,36 @@ Para um novo PDF: adicionar em `PRODUTOS` (tipo `pdf`, campo `arquivo`), criar a
 - `assets/app.js`: preços, janela de compra Pix, carrossel, menu do celular, formulários. Bloco `CONFIG` no topo: WhatsApp, e-mail, dados da empresa (razão social, CNPJ, endereço; exigidos pelo Decreto 7.962/2013) `dominiosReais` e `pagamento` (`"checkout"` = redireciona ao Mercado Pago, atual; `"pix-no-site"` = QR Code na janela, pede CPF). Fora desses domínios a compra entra em modo pré-visualização (pagamento simulado).
 - `assets/img/`: selo redondo do Instituto (`logo-selo.png` e `logo-selo-pequeno.png`, recortados em círculo com fundo transparente), favicon, capas (Manual renderizada do PDF final; Cartilha criada no mesmo padrão), fotos dos autores (Felipe e Lais recortadas de prints, resolução baixa).
 - `simulador/index.html`: o simulador em modo `profissional` (exige chave). Aceita `?chave=` na URL.
-- `api/` (funções Vercel, Node 18+, ESM, sem dependências):
-  - `criar-pagamento.js`: Checkout Pro (modo atual). Cria a preferência e devolve `init_point`; `back_urls` para `/obrigado`, `notification_url` para `/api/webhook`, `metadata {oferta, nome, email}`. Constante `FORMAS`: `"pix"` (só Pix) ou `"todas"` (cartão em até 12x e boleto também).
-  - `criar-pix.js`: QR Code no site (modo `pix-no-site`, guardado para o futuro). Ambos usam `external_reference = ifl:<oferta>`.
-  - `status-pix.js` e `webhook.js`: usam `_pedidos.js`, que grava o pedido, gera um link assinado (24 h) para cada PDF e emite a licença uma única vez. `status-pix` só devolve downloads e licença se o `email` enviado for o da compra (senão responde `confirme_email`), para que o número do pagamento sozinho não libere a entrega.
-  - `_licenca.js`: chave `RC1.<dados>.<assinatura>` (ECDSA P-256) compatível com o simulador.
-  - `_supabase.js`: REST com a service_role. Sem variáveis, não grava nada e o site segue vendendo.
-  - `_email.js`: e-mail de entrega pelo Resend (API REST). Mandado uma única vez por pagamento (trava `email_enviado_em` em `pedidos` e chave de idempotência `entrega-<id>`), com links dos PDFs válidos por 7 dias e a chave de licença.
-  - `contato.js`: formulários; `origem` = `site` ou `cursos`; campo invisível `site` contra robôs.
+- `servidor/` (código do servidor na Cloudflare, ESM, sem dependências; nada dessa pasta é publicado como arquivo):
+  - `worker.js`: entrada. Só `/api/*` passa por ele (`run_worker_first`); o resto é arquivo estático servido pela Cloudflare. Roteia `/api/criar-pagamento`, `/api/criar-pix`, `/api/status-pix`, `/api/webhook`, `/api/contato` para `rotas/`.
+  - `ambiente.js`: `ENV` (variáveis do painel, copiadas a cada chamada), `json()`, `lerCorpo()`, `enderecoSite()`. Nunca usar `process.env`, `Buffer` ou `node:*` (o Workers não é Node); usar `crypto` global, `btoa`, `TextEncoder`.
+  - `rotas/criar-pagamento.js`: Checkout Pro (modo atual). Cria a preferência e devolve `init_point`; `back_urls` para `/obrigado`, `notification_url` para `/api/webhook`, `metadata {oferta, nome, email}`. Constante `FORMAS`: `"pix"` (só Pix) ou `"todas"` (cartão em até 12x e boleto também).
+  - `rotas/criar-pix.js`: QR Code no site (modo `pix-no-site`, guardado para o futuro). Ambos usam `external_reference = ifl:<oferta>`.
+  - `rotas/status-pix.js` e `rotas/webhook.js`: usam `pedidos.js`, que grava o pedido, gera um link assinado (24 h) para cada PDF e emite a licença uma única vez. `status-pix` só devolve downloads e licença se o `email` enviado for o da compra (senão responde `confirme_email`), para que o número do pagamento sozinho não libere a entrega.
+  - `licenca.js`: chave `RC1.<dados>.<assinatura>` (ECDSA P-256) compatível com o simulador.
+  - `supabase.js`: REST com a service_role. Sem variáveis, não grava nada e o site segue vendendo.
+  - `email.js`: e-mail de entrega pelo Resend (API REST). Mandado uma única vez por pagamento (trava `email_enviado_em` em `pedidos` e chave de idempotência `entrega-<id>`), com links dos PDFs válidos por 7 dias e a chave de licença.
+  - `rotas/contato.js`: formulários; `origem` = `site` ou `cursos`; campo invisível `site` contra robôs.
 - `supabase/schema.sql`: tabelas `pedidos` e `contatos` (RLS ligado, sem políticas públicas), bucket privado `produtos`, visão `vendas_aprovadas`. Idempotente.
-- `vercel.json`: endereços sem `.html` e redirecionamentos `/ebook`, `/manual`, `/cartilha`.
-- `referencias/`: arquivos originais. Não são publicados (`.vercelignore`).
+- `wrangler.jsonc`: configuração da Cloudflare. `name` precisa ser igual ao nome do projeto no painel (`instituto-felipe-lopes`). `assets.directory = "."` com `html_handling: auto-trailing-slash` (endereços sem `.html`, `/obrigado.html` redireciona para `/obrigado`); `keep_vars: true`.
+- `.assetsignore`: o que NÃO vai para o ar (servidor, supabase, referencias, node_modules, CLAUDE.md, configs). Ao criar pasta interna nova, incluir aqui.
+- `_redirects` (`/ebook`, `/manual`, `/cartilha`) e `_headers` (cache de imagens e fontes).
+- `package.json`: só o `wrangler` (para `npm run dev` e para a publicação automática).
+- `referencias/`: arquivos originais. Não são publicados (`.assetsignore`).
 
 **Os PDFs dos produtos nunca entram no repositório** (ele é público). Ficam só no bucket `produtos` do Supabase.
 
-## Variáveis de ambiente (Vercel)
+## Publicação e variáveis de ambiente (Cloudflare)
+
+O GitHub está ligado ao projeto na Cloudflare (Workers Builds): cada push no `main` publica sozinho com `npx wrangler deploy`. Endereço provisório: `instituto-felipe-lopes.<conta>.workers.dev`. O domínio usa os DNS da Cloudflare (servidores trocados no Registro.br); os registros do Resend ficam no DNS da Cloudflare.
+
+Teste local: `npx wrangler dev` (as variáveis de teste vão em `.dev.vars`, que não entra no git). Fora de `CONFIG.dominiosReais` (`institutofelipelopes.com.br`, `workers.dev`) a compra é simulada.
+
+Variáveis em Workers & Pages > projeto > Settings > Variables and Secrets, todas do tipo **Secret**:
 
 - `MP_ACCESS_TOKEN`: Access Token de produção do Mercado Pago. A conta precisa de chave Pix.
 - `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY`.
-- `URL_SITE`: ex. https://institutofelipelopes.com.br (webhook e link do simulador).
+- `URL_SITE`: ex. https://institutofelipelopes.com.br (retorno do Mercado Pago, webhook e link do simulador).
 - `LIC_CHAVE_PRIVADA`: chave privada JWK do gerador de licenças (par da chave pública embutida no simulador).
 - `LIC_DOMINIO`: institutofelipelopes.com.br (a licença só funciona nesse domínio).
 - `PDF_BUCKET` (opcional, padrão `produtos`).

@@ -1,20 +1,22 @@
-// api/_supabase.js
+// servidor/supabase.js
 // Acesso ao Supabase pelo servidor, via API REST (sem dependências).
 // Usa a chave service_role, que NUNCA pode ir para o navegador.
 // Se as variáveis não estiverem configuradas, as funções simplesmente não gravam nada,
 // e o site continua vendendo normalmente.
 
-const URL_SB = (process.env.SUPABASE_URL || "").replace(/\/$/, "");
-const CHAVE = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+import { ENV } from "./ambiente.js";
 
-export const supabaseAtivo = () => Boolean(URL_SB && CHAVE);
+const urlSb = () => (ENV.SUPABASE_URL || "").replace(/\/$/, "");
+const chave = () => ENV.SUPABASE_SERVICE_ROLE_KEY || "";
+
+export const supabaseAtivo = () => Boolean(urlSb() && chave());
 
 function cabecalhos(extra = {}) {
-  return { apikey: CHAVE, Authorization: `Bearer ${CHAVE}`, "Content-Type": "application/json", ...extra };
+  return { apikey: chave(), Authorization: `Bearer ${chave()}`, "Content-Type": "application/json", ...extra };
 }
 
 async function chamar(caminho, opcoes = {}) {
-  const r = await fetch(`${URL_SB}${caminho}`, opcoes);
+  const r = await fetch(`${urlSb()}${caminho}`, opcoes);
   const texto = await r.text();
   const dados = texto ? JSON.parse(texto) : null;
   if (!r.ok) throw new Error(`Supabase ${r.status}: ${texto.slice(0, 300)}`);
@@ -51,5 +53,5 @@ export async function linkAssinado(bucket, caminho, segundos) {
   const rel = r?.signedURL || r?.signedUrl;
   if (!rel) return null;
   // Força o download com o próprio nome do arquivo
-  return `${URL_SB}/storage/v1${rel}&download=${encodeURIComponent(caminho)}`;
+  return `${urlSb()}/storage/v1${rel}&download=${encodeURIComponent(caminho)}`;
 }

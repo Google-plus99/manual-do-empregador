@@ -1,23 +1,26 @@
-// api/_licenca.js
+// servidor/licenca.js
 // Gera a chave de licença do Simulador Regime Certo no mesmo formato do gerador
-// (RC1.<dados>.<assinatura>), assinada com a chave privada guardada na Vercel.
-// Arquivos que começam com "_" não viram endereço público na Vercel.
+// (RC1.<dados>.<assinatura>), assinada com a chave privada guardada no painel da Cloudflare.
 
-import { webcrypto } from "node:crypto";
-const { subtle } = webcrypto;
+import { ENV } from "./ambiente.js";
+const subtle = globalThis.crypto.subtle;
 
-const b64u = buf =>
-  Buffer.from(buf).toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+// base64url a partir de bytes
+const b64u = bytes => {
+  let bin = "";
+  for (const b of new Uint8Array(bytes)) bin += String.fromCharCode(b);
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+};
 
 import { LICENCA_MESES } from "../assets/catalogo.js"; // prazo definido no catálogo
 export { LICENCA_MESES };
 
 export async function gerarLicenca({ nome, idPagamento, dataAprovacao }) {
-  const jwk = process.env.LIC_CHAVE_PRIVADA;
+  const jwk = ENV.LIC_CHAVE_PRIVADA;
   if (!jwk) throw new Error("LIC_CHAVE_PRIVADA não configurada");
 
   const chave = await subtle.importKey(
-    "jwk", JSON.parse(jwk), { name: "ECDSA", namedCurve: "P-256" }, false, ["sign"]
+    "jwk", JSON.parse(jwk.trim()), { name: "ECDSA", namedCurve: "P-256" }, false, ["sign"]
   );
 
   const base = dataAprovacao ? new Date(dataAprovacao) : new Date();
@@ -30,11 +33,11 @@ export async function gerarLicenca({ nome, idPagamento, dataAprovacao }) {
     n: String(nome || "Cliente").trim(),                                          // titular
     e: venc.toISOString().slice(0, 10),                                           // vencimento
   };
-  if (process.env.LIC_DOMINIO) dados.h = process.env.LIC_DOMINIO;                 // domínio permitido
+  if (ENV.LIC_DOMINIO) dados.h = ENV.LIC_DOMINIO.trim();                // domínio permitido
 
-  const corpo = "RC1." + b64u(Buffer.from(JSON.stringify(dados), "utf8"));
+  const corpo = "RC1." + b64u(new TextEncoder().encode(JSON.stringify(dados)));
   const assinatura = await subtle.sign(
     { name: "ECDSA", hash: "SHA-256" }, chave, new TextEncoder().encode(corpo)
   );
-  return { chave: corpo + "." + b64u(new Uint8Array(assinatura)), numero: dados.i, vencimento: dados.e, titular: dados.n };
+  return { chave: corpo + "." + b64u(assinatura), numero: dados.i, vencimento: dados.e, titular: dados.n };
 }

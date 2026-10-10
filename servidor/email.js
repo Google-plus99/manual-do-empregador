@@ -1,13 +1,15 @@
-// api/_email.js
+// servidor/email.js
 // Envia ao comprador, por e-mail, o que ele comprou: links dos PDFs e chave de licença.
 // Usa o Resend (resend.com) pela API REST, sem dependências.
-// Variáveis na Vercel:
+// Variáveis no painel da Cloudflare:
 //   RESEND_API_KEY   chave da API do Resend
 //   EMAIL_REMETENTE  ex.: Instituto Felipe Lopes <contato@institutofelipelopes.com.br>
 //   EMAIL_RESPOSTA   (opcional) e-mail que recebe as respostas do cliente
 // Sem RESEND_API_KEY, nada é enviado e a venda segue normalmente.
 
-export const emailAtivo = () => Boolean(process.env.RESEND_API_KEY && process.env.EMAIL_REMETENTE);
+import { ENV } from "./ambiente.js";
+
+export const emailAtivo = () => Boolean(ENV.RESEND_API_KEY && ENV.EMAIL_REMETENTE);
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const dataBR = iso => String(iso || "").slice(0, 10).split("-").reverse().join("/");
@@ -57,16 +59,16 @@ export async function enviarEntrega({ para, idPagamento, ...dados }) {
   if (!emailAtivo() || !para) return false;
   const { html, texto } = montar(dados);
   const corpo = {
-    from: process.env.EMAIL_REMETENTE,
+    from: ENV.EMAIL_REMETENTE,
     to: [para],
     subject: `Seu acesso: ${dados.oferta}`,
     html, text: texto,
   };
-  if (process.env.EMAIL_RESPOSTA) corpo.reply_to = process.env.EMAIL_RESPOSTA;
+  if (ENV.EMAIL_RESPOSTA) corpo.reply_to = ENV.EMAIL_RESPOSTA;
   const r = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+      Authorization: `Bearer ${ENV.RESEND_API_KEY}`,
       "Content-Type": "application/json",
       // O mesmo pagamento nunca gera dois e-mails, mesmo se o aviso chegar duas vezes
       "Idempotency-Key": `entrega-${idPagamento}`,

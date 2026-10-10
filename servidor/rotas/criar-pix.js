@@ -1,12 +1,13 @@
-// api/criar-pix.js
-// Cria a cobrança Pix no Mercado Pago e devolve o QR Code para a página.
-// O Access Token fica SOMENTE aqui no servidor (variável de ambiente na Vercel).
+// servidor/rotas/criar-pix.js  (POST /api/criar-pix)
+// Modo "pix-no-site" (desligado por enquanto, ver CONFIG.pagamento em assets/app.js):
+// cria a cobrança Pix no Mercado Pago e devolve o QR Code para a própria página.
+// O Access Token fica SOMENTE no servidor (variável no painel da Cloudflare).
 
-import { randomUUID } from "node:crypto";
-import { inserir } from "./_supabase.js";
+import { inserir } from "../supabase.js";
+import { ENV, json, lerCorpo } from "../ambiente.js";
 
 // ---- O valor cobrado vem do catálogo único (assets/catalogo.js), nunca da página ----
-import { OFERTAS } from "../assets/catalogo.js";
+import { OFERTAS } from "../../assets/catalogo.js";
 export const PREFIXO_REF = "ifl:";
 const VALIDADE_MINUTOS = 30;
 
@@ -28,22 +29,18 @@ function expiracao(min) {
   return new Date(Date.now() + min * 60000 - 3 * 3600000).toISOString().replace("Z", "-03:00");
 }
 
-export default async function handler(req, res) {
-  if (req.method !== "POST") {
-    res.setHeader("Allow", "POST");
-    return res.status(405).json({ erro: "Método não permitido." });
-  }
-  const token = process.env.MP_ACCESS_TOKEN;
-  if (!token) return res.status(500).json({ erro: "Pagamento indisponível no momento." });
+export default async function criarPix(request) {
+  const token = ENV.MP_ACCESS_TOKEN;
+  if (!token) return json({ erro: "Pagamento indisponível no momento." }, 500);
 
-  const { nome, email, cpf, oferta } = req.body || {};
-  if (!Object.hasOwn(OFERTAS, oferta)) return res.status(400).json({ erro: "Produto inválido." });
+  const { nome, email, cpf, oferta } = await lerCorpo(request);
+  if (!Object.hasOwn(OFERTAS, oferta)) return json({ erro: "Produto inválido." }, 400);
   const p = oferta, o = OFERTAS[p];
   const nomeLimpo = String(nome || "").trim().replace(/\s+/g, " ");
 
-  if (nomeLimpo.split(" ").length < 2) return res.status(400).json({ erro: "Informe nome e sobrenome." });
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || ""))) return res.status(400).json({ erro: "Informe um e-mail válido." });
-  if (!cpfValido(cpf)) return res.status(400).json({ erro: "CPF inválido. Confira os números digitados." });
+  if (nomeLimpo.split(" ").length < 2) return json({ erro: "Informe nome e sobrenome." }, 400);
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || ""))) return json({ erro: "Informe um e-mail válido." }, 400);
+  if (!cpfValido(cpf)) return json({ erro: "CPF inválido. Confira os números digitados." }, 400);
 
   const [primeiro, ...resto] = nomeLimpo.split(" ");
   const corpo = {
@@ -60,18 +57,18 @@ export default async function handler(req, res) {
       identification: { type: "CPF", number: soNumeros(cpf) },
     },
   };
-  if (process.env.URL_SITE) corpo.notification_url = `${process.env.URL_SITE.replace(/\/$/, "")}/api/webhook`;
+  corpo.notification_url = `${(ENV.URL_SITE || new URL(request.url).origin).replace(/\/$/, "")}/api/webhook`;
 
   try {
     const r = await fetch("https://api.mercadopago.com/v1/payments", {
       method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}`, "X-Idempotency-Key": randomUUID() },
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}`, "X-Idempotency-Key": crypto.randomUUID() },
       body: JSON.stringify(corpo),
     });
     const d = await r.json();
     if (!r.ok) {
       console.error("Erro Mercado Pago:", JSON.stringify(d));
-      return res.status(502).json({ erro: "Não foi possível gerar o Pix agora. Tente novamente em instantes." });
+      return json({ erro: "Não foi possível gerar o Pix agora. Tente novamente em instantes." }, 502);
     }
     // Registra o pedido no Supabase (se configurado). Falha aqui não impede a venda.
     try {
@@ -82,13 +79,13 @@ export default async function handler(req, res) {
     } catch (e) { console.error("Falha ao gravar pedido:", e.message); }
 
     const pix = d.point_of_interaction?.transaction_data || {};
-    return res.status(200).json({
+    return json({
       id: d.id, status: d.status, oferta: p, valor: o.preco,
       qr_code: pix.qr_code, qr_code_base64: pix.qr_code_base64, ticket_url: pix.ticket_url,
       expira_em: d.date_of_expiration,
     });
   } catch (e) {
     console.error(e);
-    return res.status(500).json({ erro: "Falha de comunicação com o Mercado Pago." });
+    return json({ erro: "Falha de comunicação com o Mercado Pago." }, 500);
   }
 }

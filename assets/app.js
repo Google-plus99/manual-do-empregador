@@ -22,7 +22,7 @@ const CONFIG = {
   pagamento: "checkout",
 
   // Fora destes endereços, a compra entra em modo pré-visualização (pagamento simulado)
-  dominiosReais: ["institutofelipelopes.com.br", "vercel.app"],
+  dominiosReais: ["institutofelipelopes.com.br", "workers.dev"],
 };
 /* ==================================================================== */
 

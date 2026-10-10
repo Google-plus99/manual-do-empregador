@@ -1,0 +1,11 @@
+# Imagens e fontes mudam pouco: o navegador guarda por 30 dias
+/assets/img/*
+  Cache-Control: public, max-age=2592000
+
+/assets/fontes/*
+  Cache-Control: public, max-age=2592000
+
+# Segurança básica em todas as páginas
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin

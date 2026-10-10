@@ -1,0 +1,23 @@
+// Configuração da Cloudflare (Workers, plano gratuito).
+// O nome abaixo precisa ser IGUAL ao nome do projeto criado no painel da Cloudflare.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "instituto-felipe-lopes",
+  "main": "servidor/worker.js",
+  "compatibility_date": "2025-09-01",
+
+  // Páginas, imagens, fontes e simulador: arquivos estáticos (gratuitos e ilimitados).
+  // O que não deve ir para o ar está listado em .assetsignore.
+  "assets": {
+    "directory": ".",
+    "binding": "ASSETS",
+    "html_handling": "auto-trailing-slash",
+    // Só os endereços /api/... passam pelo código do servidor
+    "run_worker_first": ["/api/*"]
+  },
+
+  // Mantém as variáveis cadastradas no painel a cada nova publicação
+  "keep_vars": true,
+
+  "observability": { "enabled": true }
+}

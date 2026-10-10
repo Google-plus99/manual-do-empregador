@@ -1,21 +1,22 @@
-// api/_pedidos.js
+// servidor/pedidos.js
 // Regras comuns à tela de status e ao webhook:
 // consulta o pagamento no Mercado Pago, atualiza o pedido no Supabase,
 // emite a licença uma única vez e monta os links temporários dos PDFs.
 
-import { gerarLicenca } from "./_licenca.js";
-import { supabaseAtivo, buscarUm, atualizar, inserir, linkAssinado } from "./_supabase.js";
+import { ENV } from "./ambiente.js";
+import { gerarLicenca } from "./licenca.js";
+import { supabaseAtivo, buscarUm, atualizar, inserir, linkAssinado } from "./supabase.js";
 import { OFERTAS, PRODUTOS, WHATSAPP } from "../assets/catalogo.js";
-import { emailAtivo, enviarEntrega } from "./_email.js";
+import { emailAtivo, enviarEntrega } from "./email.js";
 
 const PREFIXO = "ifl:";
-const BUCKET = process.env.PDF_BUCKET || "produtos";
+const bucket = () => ENV.PDF_BUCKET || "produtos";
 const PDF_VALIDADE_SEG = 60 * 60 * 24;          // links da tela valem 24 horas
 const PDF_VALIDADE_EMAIL_SEG = 60 * 60 * 24 * 7; // links do e-mail valem 7 dias
 
 export async function consultarPagamento(id) {
   const r = await fetch(`https://api.mercadopago.com/v1/payments/${encodeURIComponent(id)}`, {
-    headers: { Authorization: `Bearer ${process.env.MP_ACCESS_TOKEN}` },
+    headers: { Authorization: `Bearer ${ENV.MP_ACCESS_TOKEN}` },
   });
   if (!r.ok) return null;
   const p = await r.json();
@@ -54,7 +55,7 @@ async function obterLicenca(p) {
 }
 
 // Atualiza o pedido e devolve o que a tela de confirmação precisa mostrar
-export async function processarPagamento(p) {
+export async function processarPagamento(p, site = "") {
   const oferta = ofertaDe(p);
   const itens = OFERTAS[oferta].itens;
   const resposta = { status: p.status, oferta };
@@ -77,7 +78,7 @@ export async function processarPagamento(p) {
     resposta.downloads = [];
     for (const id of pdfs) {
       let url = null;
-      try { url = await linkAssinado(BUCKET, PRODUTOS[id].arquivo, PDF_VALIDADE_SEG); }
+      try { url = await linkAssinado(bucket(), PRODUTOS[id].arquivo, PDF_VALIDADE_SEG); }
       catch (e) { console.error(`Falha no link do PDF ${id}:`, e.message); }
       resposta.downloads.push({ produto: id, titulo: PRODUTOS[id].nome, url });
     }
@@ -86,7 +87,7 @@ export async function processarPagamento(p) {
   if (itens.includes("simulador")) {
     try {
       resposta.licenca = await obterLicenca(p);
-      resposta.link_simulador = (process.env.URL_SITE || "").replace(/\/$/, "") + "/simulador/";
+      resposta.link_simulador = (ENV.URL_SITE || site || "").replace(/\/$/, "") + "/simulador/";
     } catch (e) {
       console.error("Falha ao gerar licença:", e.message);
       resposta.licenca_erro = true;
@@ -114,7 +115,7 @@ async function enviarEmailUmaVez(p, oferta, pdfs, resposta) {
     const downloads = [];
     for (const id of pdfs) {
       let url = null;
-      try { url = await linkAssinado(BUCKET, PRODUTOS[id].arquivo, PDF_VALIDADE_EMAIL_SEG); } catch (_) {}
+      try { url = await linkAssinado(bucket(), PRODUTOS[id].arquivo, PDF_VALIDADE_EMAIL_SEG); } catch (_) {}
       downloads.push({ titulo: PRODUTOS[id].nome, url: url || resposta.downloads?.find(d => d.produto === id)?.url });
     }
     await enviarEntrega({
