@@ -24,9 +24,9 @@ Para um novo PDF: adicionar em `PRODUTOS` (tipo `pdf`, campo `arquivo`), criar a
   - `manual-do-empregador.html`, `cartilha-do-bom-fornecedor.html`, `simulador-tributario.html`: uma página por produto (Manual e Simulador oferecem o combo no fim; a Cartilha não).
   - `cursos.html`: cursos em preparação, lista de espera (grava em `contatos` com `origem = 'cursos'`).
   - `termos.html`, `privacidade.html`: **minutas**, revisar antes de publicar.
-- `assets/estilo.css`: estilo único (cores da logo em `:root`). Fonte Saira hospedada em `assets/fontes/`.
+- `assets/estilo.css`: estilo único em **modo escuro** (decidido em 10/10/2026, inspirado no primeiro projeto): fundo preto com grade sutil, vinho do selo (`--vinho`, `--vinho-texto`), dourado em rótulos e botões de contorno. Títulos em Anton caixa alta, textos em Saira; as duas fontes ficam em `assets/fontes/`. Trechos destacados dos títulos usam `<span class="v">`.
 - `assets/app.js`: preços, janela de compra Pix, carrossel, menu do celular, formulários. Bloco `CONFIG` no topo: WhatsApp, e-mail, dados da empresa (razão social, CNPJ, endereço; exigidos pelo Decreto 7.962/2013) e `dominiosReais`. Fora desses domínios a compra entra em modo pré-visualização (Pix simulado).
-- `assets/img/`: logo (transparente, a partir da imagem enviada), marca, favicon, capas (Manual renderizada do PDF final; Cartilha criada no mesmo padrão), fotos dos autores (Felipe e Lais recortadas de prints, resolução baixa).
+- `assets/img/`: selo redondo do Instituto (`logo-selo.png` e `logo-selo-pequeno.png`, recortados em círculo com fundo transparente), favicon, capas (Manual renderizada do PDF final; Cartilha criada no mesmo padrão), fotos dos autores (Felipe e Lais recortadas de prints, resolução baixa).
 - `simulador/index.html`: o simulador em modo `profissional` (exige chave). Aceita `?chave=` na URL.
 - `api/` (funções Vercel, Node 18+, ESM, sem dependências):
   - `criar-pix.js`: cria a cobrança; `external_reference = ifl:<oferta>`.
