@@ -6,12 +6,14 @@ O passo a passo completo e explicado está no documento "Guia completo: colocar 
 Resumo:
 
 COMO FUNCIONA A COMPRA
-   O cliente informa nome e e-mail, é levado à página do Mercado Pago, paga com Pix e volta
-   para /obrigado, onde baixa os PDFs e recebe a chave do simulador. O mesmo vai por e-mail.
-   QR Code dentro do site: pronto e desligado (pagamento: "pix-no-site" em assets/app.js).
+   O cliente informa nome, e-mail e CPF, o QR Code do Pix aparece na própria janela do site,
+   ele paga pelo app do banco e a janela mostra os downloads e a chave do simulador.
+   O mesmo vai por e-mail. Alternativa pronta e desligada: pagar na página do Mercado Pago
+   (pagamento: "checkout" em assets/app.js).
 
 1) MERCADO PAGO
-   Suas integrações > Criar aplicação > Pagamentos online > sem e-commerce > Checkout Pro.
+   Suas integrações > Criar aplicação > Pagamentos online > sem e-commerce > Checkout Transparente.
+   (Se já criou uma aplicação Checkout Pro, teste primeiro com o mesmo Access Token.)
    Credenciais de produção > Ativar. Copie o Access Token (APP_USR-...). A conta precisa de chave Pix.
 
 2) SUPABASE
@@ -35,7 +37,7 @@ COMO FUNCIONA A COMPRA
 
 4) TESTE
    Peça ao Claude os preços em R$ 1,00, compre cada oferta no endereço .workers.dev
-   e confira a volta para /obrigado, os downloads, a chave e Supabase > pedidos.
+   (nome, e-mail, CPF, QR Code na tela), pague e confira os downloads, a chave e Supabase > pedidos.
 
 5) DOMÍNIO institutofelipelopes.com.br
    Cloudflare > Add a domain > institutofelipelopes.com.br > plano Free.

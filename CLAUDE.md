@@ -1,6 +1,6 @@
 # Instituto Felipe Lopes: portal de infoprodutos e cursos
 
-Portal de vendas do **Instituto Felipe Lopes** (institutofelipelopes.com.br), com uma página por produto (Manual e Simulador oferecem o combo no fim; a Cartilha não). Hospedagem na **Cloudflare (Workers, plano gratuito)**, dados no **Supabase**, pagamento **Pix via Mercado Pago, hoje pelo Checkout Pro** (o cliente é levado à página do Mercado Pago e volta para `/obrigado`). O modo com QR Code no próprio site (Checkout Transparente) está pronto e desligado, para uso futuro. O repositório se chama `manual-do-empregador` por histórico: o projeto começou como a página de vendas desse e-book.
+Portal de vendas do **Instituto Felipe Lopes** (institutofelipelopes.com.br), com uma página por produto (Manual e Simulador oferecem o combo no fim; a Cartilha não). Hospedagem na **Cloudflare (Workers, plano gratuito)**, dados no **Supabase**, pagamento **Pix via Mercado Pago com o QR Code no próprio site** (Checkout Transparente, modo `pix-no-site`, decidido em 10/10/2026). O modo Checkout Pro (cliente vai à página do Mercado Pago e volta para `/obrigado`) está pronto e desligado. O repositório se chama `manual-do-empregador` por histórico: o projeto começou como a página de vendas desse e-book.
 
 ## Produtos
 
@@ -26,14 +26,14 @@ Para um novo PDF: adicionar em `PRODUTOS` (tipo `pdf`, campo `arquivo`), criar a
   - `cursos.html`: cursos em preparação, lista de espera (grava em `contatos` com `origem = 'cursos'`).
   - `termos.html`, `privacidade.html`: **minutas**, revisar antes de publicar.
 - `assets/estilo.css`: estilo único em **modo escuro** (decidido em 10/10/2026, inspirado no primeiro projeto): fundo preto com grade sutil, vinho do selo (`--vinho`, `--vinho-texto`), dourado em rótulos e botões de contorno. Títulos em Anton caixa alta, textos em Saira; as duas fontes ficam em `assets/fontes/`. Trechos destacados dos títulos usam `<span class="v">`.
-- `assets/app.js`: preços, janela de compra Pix, carrossel, menu do celular, formulários. Bloco `CONFIG` no topo: WhatsApp, e-mail, dados da empresa (razão social, CNPJ, endereço; exigidos pelo Decreto 7.962/2013) `dominiosReais` e `pagamento` (`"checkout"` = redireciona ao Mercado Pago, atual; `"pix-no-site"` = QR Code na janela, pede CPF). Fora desses domínios a compra entra em modo pré-visualização (pagamento simulado).
+- `assets/app.js`: preços, janela de compra Pix, carrossel, menu do celular, formulários. Bloco `CONFIG` no topo: WhatsApp, e-mail, dados da empresa (razão social, CNPJ, endereço; exigidos pelo Decreto 7.962/2013) `dominiosReais` e `pagamento` (`"pix-no-site"` = QR Code na janela, pede CPF, atual; `"checkout"` = redireciona ao Mercado Pago). Ao trocar, mudar também `PAGAMENTO` no gerador das páginas (textos de FAQ, termos, privacidade e passos do simulador dependem do modo). Fora desses domínios a compra entra em modo pré-visualização (pagamento simulado).
 - `assets/img/`: selo redondo do Instituto (`logo-selo.png` e `logo-selo-pequeno.png`, recortados em círculo com fundo transparente), favicon, capas (Manual renderizada do PDF final; Cartilha criada no mesmo padrão), fotos dos autores (Felipe e Lais recortadas de prints, resolução baixa).
 - `simulador/index.html`: o simulador em modo `profissional` (exige chave). Aceita `?chave=` na URL.
 - `servidor/` (código do servidor na Cloudflare, ESM, sem dependências; nada dessa pasta é publicado como arquivo):
   - `worker.js`: entrada. Só `/api/*` passa por ele (`run_worker_first`); o resto é arquivo estático servido pela Cloudflare. Roteia `/api/criar-pagamento`, `/api/criar-pix`, `/api/status-pix`, `/api/webhook`, `/api/contato` para `rotas/`.
   - `ambiente.js`: `ENV` (variáveis do painel, copiadas a cada chamada), `json()`, `lerCorpo()`, `enderecoSite()`. Nunca usar `process.env`, `Buffer` ou `node:*` (o Workers não é Node); usar `crypto` global, `btoa`, `TextEncoder`.
-  - `rotas/criar-pagamento.js`: Checkout Pro (modo atual). Cria a preferência e devolve `init_point`; `back_urls` para `/obrigado`, `notification_url` para `/api/webhook`, `metadata {oferta, nome, email}`. Constante `FORMAS`: `"pix"` (só Pix) ou `"todas"` (cartão em até 12x e boleto também).
-  - `rotas/criar-pix.js`: QR Code no site (modo `pix-no-site`, guardado para o futuro). Ambos usam `external_reference = ifl:<oferta>`.
+  - `rotas/criar-pagamento.js`: Checkout Pro (desligado). Cria a preferência e devolve `init_point`; `back_urls` para `/obrigado`, `notification_url` para `/api/webhook`, `metadata {oferta, nome, email}`. Constante `FORMAS`: `"pix"` (só Pix) ou `"todas"` (cartão em até 12x e boleto também).
+  - `rotas/criar-pix.js`: QR Code no site (modo `pix-no-site`, atual). Usa a API Payments (`/v1/payments`), que o Mercado Pago mantém, mas recomenda a Orders API para integrações novas. Ambos usam `external_reference = ifl:<oferta>`.
   - `rotas/status-pix.js` e `rotas/webhook.js`: usam `pedidos.js`, que grava o pedido, gera um link assinado (24 h) para cada PDF e emite a licença uma única vez. `status-pix` só devolve downloads e licença se o `email` enviado for o da compra (senão responde `confirme_email`), para que o número do pagamento sozinho não libere a entrega.
   - `licenca.js`: chave `RC1.<dados>.<assinatura>` (ECDSA P-256) compatível com o simulador.
   - `supabase.js`: REST com a service_role. Sem variáveis, não grava nada e o site segue vendendo.
@@ -76,7 +76,7 @@ Sem login e senha. A tela de confirmação mostra um botão de download por PDF 
 - CNPJ fora do site por decisão do Sérgio (por enquanto). Preencher `CONFIG.empresa` e `CONFIG.email` em `assets/app.js` quando houver; revisar termos e privacidade.
 - WhatsApp: `WHATSAPP` em `assets/catalogo.js` (confirmado o número 558198590139), usado no site e no e-mail.
 - Par de chaves de licença gerado em 09/10/2026: a pública está em `simulador/index.html` (`CONFIG.chavePublica`); a privada foi entregue ao Sérgio e vai só na variável `LIC_CHAVE_PRIVADA`. Se a privada vazar, gerar um par novo (as licenças antigas deixam de valer).
-- Configurar o Resend (verificar o domínio com os registros DNS no Registro.br) para ativar o e-mail de entrega.
+- Configurar o Resend (verificar o domínio com os registros DNS na Cloudflare) para ativar o e-mail de entrega.
 - Página `/evento` do site antigo não foi migrada.
 - A biografia de Felipe no PDF do Manual diz "mais de 15 anos"; no site está "mais de 20 anos". Confirmar.
 - Revisar textos à luz do Provimento 205/2021 da OAB.

@@ -19,7 +19,7 @@ const CONFIG = {
   // Forma de pagamento:
   //   "checkout"    = o cliente é levado à página do Mercado Pago para pagar (Checkout Pro)
   //   "pix-no-site" = o QR Code Pix aparece na própria página (Checkout Transparente)
-  pagamento: "checkout",
+  pagamento: "pix-no-site",
 
   // Fora destes endereços, a compra entra em modo pré-visualização (pagamento simulado)
   dominiosReais: ["institutofelipelopes.com.br", "workers.dev"],
