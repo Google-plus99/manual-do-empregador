@@ -67,15 +67,7 @@ export const OFERTAS = {
     nome: "Combo Gestão Segura",
     descricao: `Manual do Empregador (PDF) + Simulador Tributário Regime Certo (licença ${LICENCA_MESES} meses)`,
     itens: ["manual", "simulador"],
-    preco: 1, // TESTE TEMPORÁRIO (13/10/2026): preço normal 117, voltar depois dos testes
-  },
-  // TESTE TEMPORÁRIO (13/10/2026): os 3 produtos por R$ 1, só na página oculta /teste.
-  // Apagar este bloco e o arquivo teste.html quando os testes terminarem.
-  "teste-completo": {
-    nome: "Teste completo (3 produtos)",
-    descricao: `Teste: Manual do Empregador (PDF) + Cartilha do Bom Fornecedor (PDF) + Simulador (licença ${LICENCA_MESES} meses)`,
-    itens: ["manual", "cartilha", "simulador"],
-    preco: 1,
+    preco: 117,
   },
 };
 

@@ -73,7 +73,8 @@ Sem login e senha. A tela de confirmação mostra um botão de download por PDF 
 
 ## Pendências
 
-- **Teste temporário (13/10/2026):** oferta `teste-completo` (os 3 produtos por R$ 1) em `assets/catalogo.js` e página oculta `/teste` (noindex, fora do menu, gerada pelo bloco TESTE do gerador). Também a pedido dele, o `combo-gestao` está temporariamente a R$ 1 (preço normal 117). Apagar a oferta e a página e voltar o combo a 117 quando o Sérgio terminar os testes de pagamento.
+- Pagamento ligado e testado em 13/10/2026 (Pix no site e cartão no Mercado Pago, downloads, chave do simulador e e-mail sem erros). Se precisar testar de novo, uma oferta temporária de R$ 1 no catálogo basta; lembrar de remover.
+
 
 - Definir preços finais e prazo da licença.
 - CNPJ fora do site por decisão do Sérgio (por enquanto). Preencher `CONFIG.empresa` e `CONFIG.email` em `assets/app.js` quando houver; revisar termos e privacidade.
