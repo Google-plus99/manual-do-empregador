@@ -1,9 +1,9 @@
-# Imagens e fontes mudam pouco: o navegador guarda por 30 dias
+# Imagens e fontes: o navegador guarda por 1 dia (troca de imagem: mude VERSAO_IMG no gerador)
 /assets/img/*
-  Cache-Control: public, max-age=2592000
+  Cache-Control: public, max-age=86400
 
 /assets/fontes/*
-  Cache-Control: public, max-age=2592000
+  Cache-Control: public, max-age=86400
 
 # Segurança básica em todas as páginas
 /*

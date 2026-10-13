@@ -21,9 +21,10 @@
   --superficie:#250f10;     /* cartões e caixas (preto avinhado, aparece no preto e no vinho) */
   --superficie-2:#331416;   /* caixas dentro de cartões */
   --linha:rgba(255,255,255,.12);
-  --vinho:#b02a40;          /* botões e detalhes (vermelho da logo, vivo sobre o vinho) */
-  --vinho-escuro:#8e1f33;
-  --vinho-texto:#e56b7e;    /* rosado da logo, para destaques e links */
+  --vinho:#3c181a;          /* botões e detalhes: o mesmo vinho das capas */
+  --vinho-escuro:#52222a;   /* vinho um pouco mais claro no hover */
+  --vinho-texto:#c9a84c;    /* links e pequenos rótulos em dourado (texto vinho não aparece no preto) */
+  --ouro-zap:#b0781a;       /* dourado das capas, botões de falar com a equipe */
   --marrom:#3c181a;         /* faixas lisas de destaque, vinho institucional */
   --grafite:#f4ece7;        /* texto principal (creme da logo) */
   --suave:rgba(244,236,231,.72);
@@ -45,7 +46,9 @@ body{font-family:var(--fonte);font-stretch:100%;color:var(--grafite);line-height
   background-image:linear-gradient(rgba(255,255,255,.022) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.022) 1px,transparent 1px);
   background-size:64px 64px}
 ::selection{background:var(--vinho);color:#fff}
-.v{color:var(--vinho-texto)}
+/* destaque dos títulos: palavras em creme sobre uma faixa no vinho das capas */
+.v{color:var(--grafite);background:linear-gradient(transparent 12%,var(--vinho) 12%,var(--vinho) 92%,transparent 92%);padding:0 .12em;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+.nevoa .v,.escuro .v,footer .v{background:linear-gradient(transparent 12%,var(--branco) 12%,var(--branco) 92%,transparent 92%)}
 img{max-width:100%;height:auto;display:block}
 a{color:var(--vinho-texto)}
 [hidden]{display:none!important}
@@ -65,7 +68,7 @@ h3{font-size:1.45rem;letter-spacing:.01em}
 .sobretitulo{display:block;font-size:.74rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--dourado);margin-bottom:14px}
 section{padding:92px 0}
 .nevoa{background:var(--nevoa);border-top:1px solid var(--linha);border-bottom:1px solid var(--linha)}
-.escuro{background:radial-gradient(ellipse at 80% 0%,rgba(176,42,64,.22),transparent 60%),var(--marrom);color:#f3ecec}
+.escuro{background:radial-gradient(ellipse at 80% 0%,rgba(92,34,40,.22),transparent 60%),var(--marrom);color:#f3ecec}
 .escuro h2,.escuro h3{color:#fff}
 .escuro .intro{color:rgba(243,236,236,.78)}
 
@@ -75,6 +78,7 @@ section{padding:92px 0}
   background:var(--vinho);color:#fff;
   clip-path:polygon(0 0,calc(100% - var(--corte)) 0,100% var(--corte),100% 100%,var(--corte) 100%,0 calc(100% - var(--corte)));
   transition:background .15s}
+.btn{box-shadow:inset 0 0 0 1.5px rgba(201,168,76,.75)}
 .btn:hover{background:var(--vinho-escuro)}
 .btn:focus-visible{outline:none;box-shadow:inset 0 0 0 3px var(--dourado)}
 .btn-claro{background:#fff;color:var(--vinho)}
@@ -127,7 +131,7 @@ section{padding:92px 0}
 .hero-marca{position:relative;justify-self:center;width:min(300px,70%)}
 .hero-marca img{position:relative;z-index:1;width:100%}
 /* faixa diagonal atrás da logo, no ângulo das hastes */
-.hero::after{content:"";position:absolute;right:-6%;top:-20%;width:60%;height:150%;background:radial-gradient(circle at 60% 45%,rgba(176,42,64,.38),rgba(90,20,48,.18) 38%,transparent 66%);z-index:0}
+.hero::after{content:"";position:absolute;right:-6%;top:-20%;width:60%;height:150%;background:radial-gradient(circle at 60% 45%,rgba(92,34,40,.38),rgba(60,24,26,.25) 38%,transparent 66%);z-index:0}
 .hero-marca img{filter:drop-shadow(0 30px 50px rgba(0,0,0,.35))}
 .areas{display:flex;flex-wrap:wrap;gap:8px 28px;margin-top:34px;padding-top:24px;border-top:1px solid var(--linha);font-size:.95rem;color:var(--suave)}
 .areas b{color:var(--dourado);font-weight:600}
@@ -231,7 +235,7 @@ section{padding:92px 0}
 .checks li::before{content:"";position:absolute;left:0;top:13px;width:18px;height:10px;border-left:3px solid var(--vinho);border-bottom:3px solid var(--vinho);transform:rotate(-45deg)}
 .produto-capa{justify-self:center;position:relative;width:min(360px,100%)}
 .produto-capa img{width:100%;box-shadow:0 34px 60px -26px rgba(0,0,0,.9),0 0 0 1px rgba(255,255,255,.22)}
-.produto-capa::before{content:"";position:absolute;inset:8% -10% -6% 18%;background:rgba(176,42,64,.16);transform:skewX(-20deg);z-index:-1}
+.produto-capa::before{content:"";position:absolute;inset:8% -10% -6% 18%;background:rgba(92,34,40,.16);transform:skewX(-20deg);z-index:-1}
 .caixa-preco{display:flex;align-items:center;gap:22px;flex-wrap:wrap;padding:20px 22px;background:var(--nevoa);margin-bottom:14px;
   clip-path:polygon(0 0,calc(100% - 20px) 0,100% 20px,100% 100%,0 100%)}
 .caixa-preco .preco{font-size:2.4rem}
@@ -328,7 +332,7 @@ footer a:hover{color:var(--grafite)}
 footer .legal{border-top:1px solid var(--linha);padding-top:22px;font-size:.82rem;display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px}
 @media(max-width:900px){footer .grade{grid-template-columns:1fr 1fr}}
 @media(max-width:520px){footer .grade{grid-template-columns:1fr}}
-.flutuante{position:fixed;right:18px;bottom:18px;z-index:60;display:flex;align-items:center;gap:8px;background:#1f8f4e;color:#fff;padding:12px 18px;font-weight:600;font-size:.9rem;text-decoration:none;box-shadow:0 10px 24px rgba(0,0,0,.25);border-radius:999px}
+.flutuante{position:fixed;right:18px;bottom:18px;z-index:60;display:flex;align-items:center;gap:8px;background:var(--ouro-zap);color:#fff;box-shadow:0 0 0 2px #fff,0 10px 26px rgba(0,0,0,.45);padding:12px 18px;font-weight:600;font-size:.9rem;text-decoration:none;box-shadow:0 10px 24px rgba(0,0,0,.25);border-radius:999px}
 .flutuante svg{width:20px;height:20px}
 @media(max-width:600px){.flutuante span{display:none}.flutuante{padding:14px}}
 
@@ -340,13 +344,13 @@ footer .legal{border-top:1px solid var(--linha);padding-top:22px;font-size:.82re
 .janela h3{font-size:1.4rem;margin-bottom:14px;padding-right:30px}
 .janela .btn{width:100%}
 .resumo{color:var(--suave);font-size:.95rem;margin-bottom:16px}
-.erro{color:#ff8f9c;font-size:.9rem;min-height:1.2em}
+.erro{color:#ff7d6e;font-size:.9rem;min-height:1.2em}
 .etapa{display:none}.etapa.ativa{display:block}
 .pedido{padding:14px 16px;background:var(--nevoa);margin-bottom:18px}
 .pedido-topo{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
 .pedido-topo strong{font-stretch:118%;font-size:1.15rem;white-space:nowrap}
 .pedido ul{list-style:none;margin-top:6px;font-size:.88rem;color:var(--suave)}
-.upgrade{display:flex;gap:12px;align-items:flex-start;padding:14px;border:2px dashed var(--vinho-texto);background:rgba(176,42,64,.12);cursor:pointer;font-weight:400}
+.upgrade{display:flex;gap:12px;align-items:flex-start;padding:14px;border:2px dashed var(--vinho-texto);background:rgba(92,34,40,.12);cursor:pointer;font-weight:400}
 .upgrade input{width:20px;height:20px;margin:2px 0 0;flex-shrink:0;accent-color:var(--vinho)}
 .upgrade b{display:block;font-size:.95rem;margin-bottom:2px}
 .upgrade span{font-size:.86rem;color:var(--suave)}
@@ -378,7 +382,7 @@ footer .legal{border-top:1px solid var(--linha);padding-top:22px;font-size:.82re
 /* ---------- tabela de preços (página inicial) ---------- */
 .precos{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:40px;align-items:stretch}
 .preco-card{position:relative;display:flex;flex-direction:column;gap:6px;background:var(--superficie);border:1px solid var(--linha);padding:28px 24px 24px}
-.preco-card.destaque{border:2px solid var(--vinho);box-shadow:0 24px 50px -24px rgba(176,42,64,.6)}
+.preco-card.destaque{border:2px solid var(--vinho);box-shadow:0 24px 50px -24px rgba(92,34,40,.6)}
 .preco-card .tipo{font-size:.7rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--dourado)}
 .preco-card h3{font-size:1.5rem}
 .preco-card .desc{color:var(--suave);font-size:.92rem;min-height:3em}
@@ -404,7 +408,7 @@ footer .legal{border-top:1px solid var(--linha);padding-top:22px;font-size:.82re
 .publico h3{font-family:var(--fonte);text-transform:uppercase;font-size:.72rem;font-weight:700;letter-spacing:.2em;color:var(--dourado)}
 .combo .selo{background:var(--dourado);color:#16100a;letter-spacing:.08em;text-transform:uppercase;font-size:.72rem}
 .vitrine{border-top:1px solid var(--linha)}
-.slide-capa::before{background:rgba(176,42,64,.22)}
+.slide-capa::before{background:rgba(92,34,40,.22)}
 .caixa-preco{border:1px solid var(--linha)}
 .licenca .botoes .btn{letter-spacing:.06em}
 
@@ -417,3 +421,11 @@ footer .legal{border-top:1px solid var(--linha);padding-top:22px;font-size:.82re
 .caixa-obrigado .ok .icone{margin:0 0 18px}
 .caixa-obrigado form{margin-top:10px}
 @media(max-width:600px){.caixa-obrigado{padding:28px 20px}}
+
+/* falar com a equipe: dourado das capas com branco, para chamar a atenção */
+.btn.js-whats,.btn-contorno.js-whats{background:var(--ouro-zap);color:#fff;box-shadow:inset 0 0 0 2px #fff}
+.btn-contorno.js-whats::before{display:none}
+.btn.js-whats:hover,.flutuante:hover{background:#c48a24;color:#fff}
+.flutuante{animation:chamar 2.6s ease-in-out infinite}
+@keyframes chamar{0%,100%{box-shadow:0 0 0 2px #fff,0 10px 26px rgba(0,0,0,.45)}50%{box-shadow:0 0 0 2px #fff,0 0 0 9px rgba(176,120,26,.35),0 10px 26px rgba(0,0,0,.45)}}
+@media(prefers-reduced-motion:reduce){.flutuante{animation:none}}
