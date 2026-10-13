@@ -9,6 +9,7 @@ import criarPix from "./rotas/criar-pix.js";
 import statusPix from "./rotas/status-pix.js";
 import webhook from "./rotas/webhook.js";
 import contato from "./rotas/contato.js";
+import saude from "./rotas/saude.js";
 
 // método aceito por rota (null = qualquer)
 const ROTAS = {
@@ -17,6 +18,7 @@ const ROTAS = {
   "/api/status-pix": [statusPix, "GET"],
   "/api/webhook": [webhook, null],
   "/api/contato": [contato, "POST"],
+  "/api/saude": [saude, "GET"],   // diagnóstico: só diz o que está configurado, nunca os valores
 };
 
 export default {

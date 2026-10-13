@@ -6,13 +6,16 @@
 
 import { ENV } from "./ambiente.js";
 
-const urlSb = () => (ENV.SUPABASE_URL || "").replace(/\/$/, "");
-const chave = () => ENV.SUPABASE_SERVICE_ROLE_KEY || "";
+const urlSb = () => (ENV.SUPABASE_URL || "").trim().replace(/\/$/, "");
+const chave = () => (ENV.SUPABASE_SERVICE_ROLE_KEY || "").trim();
 
 export const supabaseAtivo = () => Boolean(urlSb() && chave());
 
 function cabecalhos(extra = {}) {
-  return { apikey: chave(), Authorization: `Bearer ${chave()}`, "Content-Type": "application/json", ...extra };
+  // chave antiga (service_role, JWT "eyJ..."): vai no apikey e no Authorization;
+  // chave nova (sb_secret_...): só no apikey, que é como o Supabase a aceita
+  const auth = chave().startsWith("sb_") ? {} : { Authorization: `Bearer ${chave()}` };
+  return { apikey: chave(), ...auth, "Content-Type": "application/json", ...extra };
 }
 
 async function chamar(caminho, opcoes = {}) {
