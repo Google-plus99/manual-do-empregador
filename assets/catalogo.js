@@ -11,7 +11,11 @@
 // OFERTAS: o que se vende (um produto sozinho ou um combo).
 //   itens   → produtos entregues
 //   preco   → valor cobrado
-//   de      → preço "de" riscado (opcional)
+//   de      → preço "de" riscado (opcional): valor previsto depois do lançamento
+//
+// Preços de LANÇAMENTO (definidos em 13/10/2026). O site mostra "Condição de lançamento"
+// abaixo de cada preço; ao encerrar o lançamento, ajuste aqui e tire a frase em LANCAMENTO
+// (gerador das páginas) e em assets/app.js.
 //   upgrade → oferta sugerida na janela de compra para completar o pedido (opcional)
 
 export const LICENCA_MESES = 12;
@@ -60,6 +64,7 @@ export const OFERTAS = {
     descricao: `Simulador Tributário Regime Certo (licença ${LICENCA_MESES} meses)`,
     itens: ["simulador"],
     preco: 97,
+    de: 147,
     upgrade: "combo-gestao",
   },
   // Único combo: Manual do Empregador + Simulador Tributário

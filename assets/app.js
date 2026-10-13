@@ -185,7 +185,7 @@ const JANELA = `
 
     <div class="etapa ativa" id="etapa-dados">
       <h3 id="pix-titulo">Finalizar compra</h3>
-      <div class="pedido"><div class="pedido-topo"><span id="pix-nome"></span><strong id="pix-valor"></strong></div><ul id="pix-itens"></ul></div>
+      <div class="pedido"><div class="pedido-topo"><span id="pix-nome"></span><strong id="pix-valor"></strong></div><ul id="pix-itens"></ul><p class="lancamento">Condição de lançamento</p></div>
       <form id="form-pix" novalidate>
         <label>Nome completo <em>*</em><input name="nome" required autocomplete="name"></label>
         <label>E-mail <em>*</em><input name="email" type="email" required autocomplete="email"></label>

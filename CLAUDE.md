@@ -4,14 +4,14 @@ Portal de vendas do **Instituto Felipe Lopes** (institutofelipelopes.com.br), co
 
 ## Produtos
 
-| Oferta (id) | O que entrega | Preço provisório |
+| Oferta (id) | O que entrega | Preço de lançamento (13/10/2026) |
 |---|---|---|
 | `manual` | PDF Manual do Empregador (Felipe Lopes e Lais Leite, 42 p., layout na identidade do Instituto desde 13/10/2026) | R$ 47 (de 97) |
 | `cartilha` | PDF Cartilha do Bom Fornecedor (Felipe Lopes, Paulo Uchoa e Virgilio Calmon, 24 p.) | R$ 37 (de 67) |
-| `simulador` | Licença do Simulador Regime Certo (Virgilio Calmon, co-autor) | R$ 97 |
-| `combo-gestao` | Manual + Simulador (Combo Gestão Segura) | R$ 117 |
+| `simulador` | Licença do Simulador Regime Certo (Virgilio Calmon, co-autor) | R$ 97 (de 147) |
+| `combo-gestao` | Manual + Simulador (Combo Gestão Segura) | R$ 117 (de 144, soma dos avulsos) |
 
-**Decisão:** os produtos são vendidos separados e o único combo é Manual + Simulador. A Cartilha é vendida só avulsa, sem combo nem oferta de upgrade.
+**Decisão:** os produtos são vendidos separados e o único combo é Manual + Simulador. Os preços são de lançamento: abaixo de cada preço (cartões, carrossel, caixas das páginas, combo e janela de compra) aparece "Condição de lançamento" (`.lancamento`), e a nota da seção de preços diz que os valores podem mudar para novas compras. A Cartilha é vendida só avulsa, sem combo nem oferta de upgrade.
 
 **Fonte única de preços e entregas: `assets/catalogo.js`.** É importado pelas páginas (`assets/app.js`) e pelo servidor (`servidor/rotas/criar-pagamento.js`, `servidor/rotas/criar-pix.js`, `servidor/pedidos.js`, `servidor/licenca.js`). Para mudar preço, prazo da licença (`LICENCA_MESES`) ou criar produto/combo, altere só esse arquivo. Cada oferta pode ter `upgrade`, que aparece como sugestão na janela de compra.
 
@@ -76,7 +76,7 @@ Sem login e senha. A tela de confirmação mostra um botão de download por PDF 
 - Pagamento ligado e testado em 13/10/2026 (Pix no site e cartão no Mercado Pago, downloads, chave do simulador e e-mail sem erros). Se precisar testar de novo, uma oferta temporária de R$ 1 no catálogo basta; lembrar de remover.
 
 
-- Definir preços finais e prazo da licença.
+- Preços de lançamento definidos em 13/10/2026; ao encerrar o lançamento, ajustar o catálogo e retirar "Condição de lançamento" (gerador e `assets/app.js`).
 - CNPJ fora do site por decisão do Sérgio (por enquanto). Preencher `CONFIG.empresa` e `CONFIG.email` em `assets/app.js` quando houver; revisar termos e privacidade.
 - WhatsApp: `WHATSAPP` em `assets/catalogo.js` (confirmado o número 558198590139), usado no site e no e-mail.
 - Par de chaves de licença gerado em 09/10/2026: a pública está em `simulador/index.html` (`CONFIG.chavePublica`); a privada foi entregue ao Sérgio e vai só na variável `LIC_CHAVE_PRIVADA`. Se a privada vazar, gerar um par novo (as licenças antigas deixam de valer).

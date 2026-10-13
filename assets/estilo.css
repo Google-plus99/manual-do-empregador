@@ -196,6 +196,9 @@ section{padding:92px 0}
 .itens-combo li > span:last-child{color:var(--suave);white-space:nowrap}
 .preco-bloco{margin:auto 0 20px}
 .de{color:var(--suave);text-decoration:line-through;font-size:.95rem}
+.lancamento{font-size:.72rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--dourado);margin:4px 0 0;line-height:1.3}
+.lancamento-slide{margin:-14px 0 22px}
+.pedido .lancamento{margin-top:8px}
 .preco{font-family:var(--titulo);font-weight:400;font-size:3.2rem;line-height:1.05;color:var(--grafite)}
 .preco small{font-size:1.1rem;color:var(--suave);font-weight:600}
 .economia{color:var(--verde);font-weight:600;font-size:.95rem;margin-top:4px}
