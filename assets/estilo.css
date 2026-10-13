@@ -349,6 +349,13 @@ footer .legal{border-top:1px solid var(--linha);padding-top:22px;font-size:.82re
 .pedido-topo{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
 .pedido-topo strong{font-stretch:118%;font-size:1.15rem;white-space:nowrap}
 .pedido ul{list-style:none;margin-top:6px;font-size:.88rem;color:var(--suave)}
+.formas{border:0;padding:0;margin:0 0 14px;display:grid;gap:8px}
+.formas legend{font-size:.88rem;font-weight:600;margin-bottom:8px;padding:0}
+.formas label{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border:1px solid var(--linha);background:var(--superficie-2);cursor:pointer;font-weight:400;margin:0}
+.formas label:has(input:checked){border-color:var(--dourado);background:rgba(201,168,76,.08)}
+.formas input{width:18px;height:18px;margin:3px 0 0;padding:0;flex-shrink:0;accent-color:var(--dourado)}
+.formas b{display:block;font-size:.95rem}
+.formas span{font-size:.84rem;color:var(--suave)}
 .upgrade{display:flex;gap:12px;align-items:flex-start;padding:14px;border:2px dashed var(--vinho-texto);background:rgba(92,34,40,.12);cursor:pointer;font-weight:400}
 .upgrade input{width:20px;height:20px;margin:2px 0 0;flex-shrink:0;accent-color:var(--vinho)}
 .upgrade b{display:block;font-size:.95rem;margin-bottom:2px}

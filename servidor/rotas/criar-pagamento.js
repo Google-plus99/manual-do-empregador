@@ -1,6 +1,10 @@
 // servidor/rotas/criar-pagamento.js  (POST /api/criar-pagamento)
 // Checkout Pro do Mercado Pago: cria a "preferência" de pagamento e devolve o link
 // da página do Mercado Pago para onde o cliente é levado.
+// Usado de dois jeitos:
+//   1) modo atual (pix-no-site): o Pix é pago no site e esta rota só serve ao CARTÃO
+//      (corpo com forma = "cartao"), pago na página segura do Mercado Pago;
+//   2) modo "checkout" (desligado): toda compra passa por aqui, com as formas de FORMAS.
 // Depois do pagamento, o Mercado Pago devolve o cliente para /obrigado e avisa o
 // servidor em /api/webhook, que registra o pedido, emite a licença e manda o e-mail.
 
@@ -10,7 +14,13 @@ import { ENV, json, lerCorpo, enderecoSite } from "../ambiente.js";
 // "pix"   = só Pix na página do Mercado Pago
 // "todas" = Pix, cartão (com parcelamento) e boleto
 const FORMAS = "pix";
-const PARCELAS_MAX = 12; // usado só quando FORMAS = "todas"
+const PARCELAS_MAX = 12; // parcelas no cartão (o juro, se houver, segue a configuração da conta no Mercado Pago)
+
+// cartão de crédito apenas: tira Pix, boleto, lotérica, débito e pré-pago da página do Mercado Pago
+const SO_CARTAO = {
+  excluded_payment_types: [{ id: "bank_transfer" }, { id: "ticket" }, { id: "atm" }, { id: "debit_card" }, { id: "prepaid_card" }],
+  installments: PARCELAS_MAX,
+};
 
 const limpar = (s, max) => String(s || "").trim().replace(/\s+/g, " ").slice(0, max);
 
@@ -20,6 +30,7 @@ export default async function criarPagamento(request) {
 
   const b = await lerCorpo(request);
   const oferta = b.oferta;
+  const cartao = b.forma === "cartao";
   const nome = limpar(b.nome, 120);
   const email = limpar(b.email, 160).toLowerCase();
   if (!Object.hasOwn(OFERTAS, oferta)) return json({ erro: "Produto inválido." }, 400);
@@ -50,7 +61,7 @@ export default async function criarPagamento(request) {
     auto_return: "approved",
     notification_url: `${site}/api/webhook`,
     statement_descriptor: "INST FELIPE LOPES",
-    payment_methods: FORMAS === "pix"
+    payment_methods: cartao ? SO_CARTAO : FORMAS === "pix"
       ? { excluded_payment_types: [{ id: "credit_card" }, { id: "debit_card" }, { id: "ticket" }, { id: "atm" }, { id: "prepaid_card" }] }
       : { installments: PARCELAS_MAX },
   };

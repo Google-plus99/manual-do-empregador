@@ -20,6 +20,9 @@ const CONFIG = {
   //   "checkout"    = o cliente é levado à página do Mercado Pago para pagar (Checkout Pro)
   //   "pix-no-site" = o QR Code Pix aparece na própria página (Checkout Transparente)
   pagamento: "pix-no-site",
+  // No modo "pix-no-site", true oferece também cartão de crédito, pago na página segura
+  // do Mercado Pago (os dados do cartão nunca passam pelo nosso site).
+  cartao: true,
 
   // Fora destes endereços, a compra entra em modo pré-visualização (pagamento simulado)
   dominiosReais: ["institutofelipelopes.com.br", "workers.dev"],
@@ -33,6 +36,7 @@ const textoLicenca = `${LICENCA_MESES} meses`;
 const linkWhats = (msg = CONFIG.mensagemWhats) => `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(msg)}`;
 const DEMO = !CONFIG.dominiosReais.some(d => location.hostname === d || location.hostname.endsWith("." + d));
 const CHECKOUT = CONFIG.pagamento === "checkout";
+const CARTAO = !CHECKOUT && CONFIG.cartao;
 const guardar = (k, v) => { try { sessionStorage.setItem(k, JSON.stringify(v)); } catch (_) {} };
 const ler = k => { try { return JSON.parse(sessionStorage.getItem(k) || "null"); } catch (_) { return null; } };
 
@@ -185,6 +189,11 @@ const JANELA = `
       <form id="form-pix" novalidate>
         <label>Nome completo <em>*</em><input name="nome" required autocomplete="name"></label>
         <label>E-mail <em>*</em><input name="email" type="email" required autocomplete="email"></label>
+        <fieldset class="formas" id="formas" hidden>
+          <legend>Forma de pagamento</legend>
+          <label><input type="radio" name="forma" value="pix" checked><div><b>Pix</b><span>QR Code aqui mesmo no site, acesso na hora.</span></div></label>
+          <label><input type="radio" name="forma" value="cartao"><div><b>Cartão de crédito</b><span>Em até 12x, na página segura do Mercado Pago.</span></div></label>
+        </fieldset>
         <label id="campo-cpf">CPF <em>*</em><input name="cpf" inputmode="numeric" maxlength="14" placeholder="000.000.000-00"></label>
         <label class="upgrade" id="upgrade" hidden><input type="checkbox" id="upgrade-check"><div><b id="upgrade-titulo"></b><span id="upgrade-texto"></span></div></label>
         <p class="erro" id="pix-erro" role="alert"></p>
@@ -246,12 +255,20 @@ const JANELA = `
   const upgrade = $("upgrade"), upgradeCheck = $("upgrade-check");
   let inicial = null, consulta = null, relogio = null, ultimoFoco = null;
 
-  const rotuloBotao = CHECKOUT ? "Continuar para o pagamento" : "Gerar QR Code Pix";
-  if (CHECKOUT) {
-    $("campo-cpf").hidden = true;
-    $("aviso-pagamento").textContent = "Você será levado ao site do Mercado Pago para pagar com Pix. Depois do pagamento, volta para cá e recebe o acesso, que também vai para o seu e-mail. A licença do simulador, quando incluída, sai no nome informado.";
+  const AVISO_PIX = $("aviso-pagamento").textContent;
+  const AVISO_MP = "Você será levado ao site do Mercado Pago para pagar. Depois do pagamento, volta para cá e recebe o acesso, que também vai para o seu e-mail. A licença do simulador, quando incluída, sai no nome informado.";
+  const AVISO_CARTAO = "Você será levado à página segura do Mercado Pago para pagar com cartão de crédito. Os dados do cartão são digitados lá, não neste site. Depois da aprovação, volta para cá e recebe o acesso, que também vai para o seu e-mail.";
+  // pagamento fora do site: modo checkout inteiro ou cartão escolhido na janela
+  const vaiAoMP = () => CHECKOUT || (CARTAO && form.forma.value === "cartao");
+  const rotuloBotao = () => CHECKOUT ? "Continuar para o pagamento" : vaiAoMP() ? "Pagar com cartão no Mercado Pago" : "Gerar QR Code Pix";
+  function ajustarForma() {
+    $("campo-cpf").hidden = vaiAoMP();
+    $("aviso-pagamento").textContent = CHECKOUT ? AVISO_MP : vaiAoMP() ? AVISO_CARTAO : AVISO_PIX;
+    btnGerar.textContent = rotuloBotao();
   }
-  btnGerar.textContent = rotuloBotao;
+  $("formas").hidden = !CARTAO;
+  form.querySelectorAll('input[name="forma"]').forEach(r => r.addEventListener("change", () => { erro.textContent = ""; ajustarForma(); }));
+  ajustarForma();
 
   const ofertaAtual = () => (upgradeCheck.checked && OFERTAS[inicial].upgrade) ? OFERTAS[inicial].upgrade : inicial;
   const nomesItens = itens => itens.map(i => PRODUTOS[i].nome);
@@ -307,14 +324,16 @@ const JANELA = `
     erro.textContent = "";
     if (form.nome.value.trim().split(/\s+/).length < 2) { erro.textContent = "Informe nome e sobrenome."; return; }
     if (!form.email.value || !form.email.checkValidity()) { erro.textContent = "Informe um e-mail válido."; return; }
-    if (!CHECKOUT && form.cpf.value.replace(/\D/g, "").length !== 11) { erro.textContent = "Informe o CPF completo."; return; }
+    if (!vaiAoMP() && form.cpf.value.replace(/\D/g, "").length !== 11) { erro.textContent = "Informe o CPF completo."; return; }
 
-    btnGerar.disabled = true; btnGerar.textContent = CHECKOUT ? "Abrindo o Mercado Pago..." : "Gerando Pix...";
+    const foraDoSite = vaiAoMP();
+    btnGerar.disabled = true; btnGerar.textContent = foraDoSite ? "Abrindo o Mercado Pago..." : "Gerando Pix...";
     const dados = { nome: form.nome.value.trim(), email: form.email.value.trim(), cpf: form.cpf.value, oferta: ofertaAtual() };
+    if (CARTAO && foraDoSite) { dados.forma = "cartao"; delete dados.cpf; }
     guardar("ifl-compra", { email: dados.email, oferta: dados.oferta });
     try {
-      if (CHECKOUT) {
-        // Checkout Pro: cria a preferência e leva o cliente à página do Mercado Pago
+      if (foraDoSite) {
+        // Checkout Pro: cria a preferência e leva o cliente à página do Mercado Pago (cartão, ou tudo no modo checkout)
         if (DEMO) { await new Promise(r => setTimeout(r, 500)); location.href = `obrigado.html?demo=1&oferta=${encodeURIComponent(dados.oferta)}`; return; }
         const r = await fetch("api/criar-pagamento", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(dados) });
         const d = await r.json();
@@ -330,7 +349,7 @@ const JANELA = `
     } catch (err) {
       erro.textContent = err.message || "Não foi possível iniciar o pagamento. Tente novamente.";
     } finally {
-      btnGerar.disabled = false; btnGerar.textContent = rotuloBotao;
+      btnGerar.disabled = false; btnGerar.textContent = rotuloBotao();
     }
   });
 
