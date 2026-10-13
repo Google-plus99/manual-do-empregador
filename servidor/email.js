@@ -16,7 +16,7 @@ const dataBR = iso => String(iso || "").slice(0, 10).split("-").reverse().join("
 
 function montar({ nome, oferta, downloads = [], licenca, linkSimulador, whatsapp }) {
   const primeiro = String(nome || "").trim().split(/\s+/)[0] || "Olá";
-  const vinho = "#3a1a1d";
+  const vinho = "#3c181a";
   const botao = (href, texto) =>
     `<a href="${esc(href)}" style="display:inline-block;background:${vinho};color:#fff;text-decoration:none;font-weight:bold;padding:12px 22px;margin:4px 0">${esc(texto)}</a>`;
 

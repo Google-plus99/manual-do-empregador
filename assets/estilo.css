@@ -14,17 +14,17 @@
 }
 
 :root{
-  /* Preto com o vinho institucional #3A1A1D:
+  /* Preto com o vinho institucional #3C181A (o mesmo das capas):
      fundo quadriculado em preto, seções lisas no vinho */
   --branco:#0b0809;         /* fundo da página (preto, com a grade) */
-  --nevoa:#3a1a1d;          /* seções lisas (vinho institucional) */
-  --superficie:#241113;     /* cartões e caixas (preto avinhado, aparece no preto e no vinho) */
-  --superficie-2:#33191c;   /* caixas dentro de cartões */
+  --nevoa:#3c181a;          /* seções lisas (vinho institucional) */
+  --superficie:#250f10;     /* cartões e caixas (preto avinhado, aparece no preto e no vinho) */
+  --superficie-2:#331416;   /* caixas dentro de cartões */
   --linha:rgba(255,255,255,.12);
   --vinho:#b02a40;          /* botões e detalhes (vermelho da logo, vivo sobre o vinho) */
   --vinho-escuro:#8e1f33;
   --vinho-texto:#e56b7e;    /* rosado da logo, para destaques e links */
-  --marrom:#3a1a1d;         /* faixas lisas de destaque, vinho institucional */
+  --marrom:#3c181a;         /* faixas lisas de destaque, vinho institucional */
   --grafite:#f4ece7;        /* texto principal (creme da logo) */
   --suave:rgba(244,236,231,.72);
   --cinza:#8c8889;
@@ -142,7 +142,7 @@ section{padding:92px 0}
 .slide{flex:0 0 100%;min-width:0;display:grid;grid-template-columns:.8fr 1.2fr;gap:56px;align-items:center;padding:4px}
 .slide-capa{display:flex;justify-content:center;position:relative;isolation:isolate}
 .slide-capa::before{content:"";position:absolute;inset:6% 14% -4% 22%;background:rgba(255,255,255,.07);transform:skewX(-20deg);z-index:-1}
-.slide-capa img{width:min(300px,100%);box-shadow:0 30px 50px -20px rgba(0,0,0,.65),0 0 0 1px rgba(255,255,255,.14)}
+.slide-capa img{width:min(300px,100%);box-shadow:0 30px 50px -20px rgba(0,0,0,.75),0 0 0 1px rgba(255,255,255,.24)}
 .slide h3{font-size:clamp(2rem,3.6vw,2.8rem);margin:6px 0 12px}
 .slide p{color:rgba(243,236,236,.8);max-width:56ch}
 .slide ul{list-style:none;margin:18px 0 22px}
@@ -230,7 +230,7 @@ section{padding:92px 0}
 .checks li{position:relative;padding:7px 0 7px 32px}
 .checks li::before{content:"";position:absolute;left:0;top:13px;width:18px;height:10px;border-left:3px solid var(--vinho);border-bottom:3px solid var(--vinho);transform:rotate(-45deg)}
 .produto-capa{justify-self:center;position:relative;width:min(360px,100%)}
-.produto-capa img{width:100%;box-shadow:0 34px 60px -26px rgba(0,0,0,.9),0 0 0 1px rgba(255,255,255,.12)}
+.produto-capa img{width:100%;box-shadow:0 34px 60px -26px rgba(0,0,0,.9),0 0 0 1px rgba(255,255,255,.22)}
 .produto-capa::before{content:"";position:absolute;inset:8% -10% -6% 18%;background:rgba(176,42,64,.16);transform:skewX(-20deg);z-index:-1}
 .caixa-preco{display:flex;align-items:center;gap:22px;flex-wrap:wrap;padding:20px 22px;background:var(--nevoa);margin-bottom:14px;
   clip-path:polygon(0 0,calc(100% - 20px) 0,100% 20px,100% 100%,0 100%)}
@@ -319,7 +319,7 @@ textarea{min-height:110px;resize:vertical}
 .texto-legal ul{padding-left:20px}
 
 /* ---------- rodapé ---------- */
-footer{background:#3a1a1d;border-top:1px solid var(--linha);padding:64px 0 28px;font-size:.93rem;color:var(--suave)}
+footer{background:#3c181a;border-top:1px solid var(--linha);padding:64px 0 28px;font-size:.93rem;color:var(--suave)}
 footer .grade{display:grid;grid-template-columns:1.1fr 1fr 1fr 1fr;gap:36px;margin-bottom:40px}
 footer .logo-rodape{width:auto;height:150px}
 footer h4{color:var(--dourado);font-size:.72rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;margin-bottom:12px}
