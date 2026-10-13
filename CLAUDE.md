@@ -6,7 +6,7 @@ Portal de vendas do **Instituto Felipe Lopes** (institutofelipelopes.com.br), co
 
 | Oferta (id) | O que entrega | Preço provisório |
 |---|---|---|
-| `manual` | PDF Manual do Empregador (Felipe Lopes e Lais Leite, 46 p.) | R$ 47 (de 97) |
+| `manual` | PDF Manual do Empregador (Felipe Lopes e Lais Leite, 42 p., layout na identidade do Instituto desde 13/10/2026) | R$ 47 (de 97) |
 | `cartilha` | PDF Cartilha do Bom Fornecedor (Felipe Lopes Advogados, 24 p.) | R$ 37 (de 67) |
 | `simulador` | Licença do Simulador Regime Certo (Virgilio Calmon, co-autor) | R$ 97 |
 | `combo-gestao` | Manual + Simulador (Combo Gestão Segura) | R$ 117 |
