@@ -6,7 +6,9 @@
 
 import { ENV } from "./ambiente.js";
 
-const urlSb = () => (ENV.SUPABASE_URL || "").trim().replace(/\/$/, "");
+// Aceita o endereço como vier do painel do Supabase: com barra no fim ou com /rest/v1 colado
+export const normalizarUrlSb = u => String(u || "").trim().replace(/\/+$/, "").replace(/\/(rest|storage|auth)\/v1.*$/i, "").replace(/\/+$/, "");
+const urlSb = () => normalizarUrlSb(ENV.SUPABASE_URL);
 const chave = () => (ENV.SUPABASE_SERVICE_ROLE_KEY || "").trim();
 
 export const supabaseAtivo = () => Boolean(urlSb() && chave());

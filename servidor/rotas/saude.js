@@ -4,6 +4,7 @@
 
 import { ENV, json } from "../ambiente.js";
 import { PRODUTOS } from "../../assets/catalogo.js";
+import { normalizarUrlSb } from "../supabase.js";
 
 const NOMES = ["MP_ACCESS_TOKEN", "SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "URL_SITE",
   "LIC_CHAVE_PRIVADA", "LIC_DOMINIO", "RESEND_API_KEY", "EMAIL_REMETENTE"];
@@ -26,12 +27,13 @@ export default async function saude() {
   const res = { variaveis };
 
   // ---------- Supabase ----------
-  const url = (ENV.SUPABASE_URL || "").trim().replace(/\/$/, "");
+  const url = normalizarUrlSb(ENV.SUPABASE_URL);
   const chave = (ENV.SUPABASE_SERVICE_ROLE_KEY || "").trim();
   if (url && chave) {
     const h = chave.startsWith("sb_") ? { apikey: chave } : { apikey: chave, Authorization: `Bearer ${chave}` };
     res.supabase = {
       endereco_formato_ok: /^https:\/\/[a-z0-9-]+\.supabase\.co$/.test(url),
+      endereco_ajustado: url !== (ENV.SUPABASE_URL || ""),
       tipo_chave: chave.startsWith("eyJ") ? "service_role (legacy, correta)" : chave.startsWith("sb_secret_") ? "secret (nova)" : chave.startsWith("sb_publishable_") ? "publishable (ERRADA: use a service_role)" : "desconhecido",
       espacos_na_chave: chave !== ENV.SUPABASE_SERVICE_ROLE_KEY,
       tabela_contatos: await tentar(async () => status(await fetch(`${url}/rest/v1/contatos?select=id&limit=1`, { headers: h }))),
