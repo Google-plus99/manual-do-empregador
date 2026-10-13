@@ -47,8 +47,7 @@ body{font-family:var(--fonte);font-stretch:100%;color:var(--grafite);line-height
   background-size:64px 64px}
 ::selection{background:var(--vinho);color:#fff}
 /* destaque dos títulos: palavras em creme sobre uma faixa no vinho das capas */
-.v{color:#fff;background:linear-gradient(transparent 12%,var(--vinho) 12%,var(--vinho) 92%,transparent 92%);padding:0 .12em;-webkit-box-decoration-break:clone;box-decoration-break:clone}
-.nevoa .v,.escuro .v,footer .v{background:linear-gradient(transparent 12%,var(--branco) 12%,var(--branco) 92%,transparent 92%)}
+.v{color:#fff}   /* destaques dos títulos: só branco, sem faixa (13/10/2026) */
 img{max-width:100%;height:auto;display:block}
 a{color:var(--vinho-texto)}
 [hidden]{display:none!important}
