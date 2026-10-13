@@ -69,6 +69,14 @@ export const OFERTAS = {
     itens: ["manual", "simulador"],
     preco: 117,
   },
+  // TESTE TEMPORÁRIO (13/10/2026): os 3 produtos por R$ 1, só na página oculta /teste.
+  // Apagar este bloco e o arquivo teste.html quando os testes terminarem.
+  "teste-completo": {
+    nome: "Teste completo (3 produtos)",
+    descricao: `Teste: Manual do Empregador (PDF) + Cartilha do Bom Fornecedor (PDF) + Simulador (licença ${LICENCA_MESES} meses)`,
+    itens: ["manual", "cartilha", "simulador"],
+    preco: 1,
+  },
 };
 
 // Soma dos produtos avulsos de um combo (para mostrar a economia)

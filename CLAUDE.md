@@ -73,6 +73,8 @@ Sem login e senha. A tela de confirmação mostra um botão de download por PDF 
 
 ## Pendências
 
+- **Teste temporário (13/10/2026):** oferta `teste-completo` (os 3 produtos por R$ 1) em `assets/catalogo.js` e página oculta `/teste` (noindex, fora do menu, gerada pelo bloco TESTE do gerador). Apagar os três quando o Sérgio terminar os testes de pagamento.
+
 - Definir preços finais e prazo da licença.
 - CNPJ fora do site por decisão do Sérgio (por enquanto). Preencher `CONFIG.empresa` e `CONFIG.email` em `assets/app.js` quando houver; revisar termos e privacidade.
 - WhatsApp: `WHATSAPP` em `assets/catalogo.js` (confirmado o número 558198590139), usado no site e no e-mail.
