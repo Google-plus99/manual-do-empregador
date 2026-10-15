@@ -188,8 +188,12 @@ const JANELA = `
       <h3 id="pix-titulo">Finalizar compra</h3>
       <div class="pedido">
         <div class="pedido-rotulo">Seu pedido</div>
-        <div class="escolha" id="escolha"></div>
-        <p class="dica-kit" id="dica-kit"></p>
+        <div class="principal" id="principal"></div>
+        <div class="oferta-caixa">
+          <div class="oc-t">Oferta do caixa: <b>15% de desconto</b></div>
+          <p class="dica-kit" id="dica-kit"></p>
+          <div class="escolha" id="escolha"></div>
+        </div>
         <div class="totais" id="totais"></div>
         <p class="lancamento">Condição de lançamento</p>
       </div>
@@ -275,32 +279,41 @@ const JANELA = `
   form.querySelectorAll('input[name="forma"]').forEach(r => r.addEventListener("change", () => { erro.textContent = ""; ajustarForma(); }));
   ajustarForma();
 
-  // Escolha dos produtos: 2 ou mais no mesmo pedido = desconto de DESCONTO_KIT (oferta "kit-...")
+  // Oferta do caixa: o produto escolhido fica fixo no topo; os outros aparecem como opção.
+  // Levando 2 ou mais no mesmo pedido, o pedido inteiro tem DESCONTO_KIT (oferta "kit-...").
   const PCT = Math.round(DESCONTO_KIT * 100) + "%";
-  $("escolha").innerHTML = Object.keys(PRODUTOS).map(p =>
-    `<label class="item-pedido"><input type="checkbox" value="${p}"><span>${PRODUTOS[p].nome}</span><b>${brl(OFERTAS[p].preco)}</b></label>`).join("");
-  const caixas = [...$("escolha").querySelectorAll("input")];
-  const selecionados = () => caixas.filter(c => c.checked).map(c => c.value);
+  let principal = null, caixas = [];
+  const selecionados = () => [principal, ...caixas.filter(c => c.checked).map(c => c.value)];
   const ofertaAtual = () => idKit(selecionados());
+
+  function montarEscolha(extrasMarcados) {
+    $("principal").innerHTML = `<span>${PRODUTOS[principal].nome}</span><b>${brl(OFERTAS[principal].preco)}</b>`;
+    $("escolha").innerHTML = Object.keys(PRODUTOS).filter(p => p !== principal).map(p =>
+      `<label class="item-pedido"><input type="checkbox" value="${p}"${extrasMarcados.includes(p) ? " checked" : ""}><span>${PRODUTOS[p].nome}</span><b>+ ${brl(OFERTAS[p].preco)}</b></label>`).join("");
+    caixas = [...$("escolha").querySelectorAll("input")];
+    caixas.forEach(c => c.addEventListener("change", atualizarResumo));
+  }
 
   function atualizarResumo() {
     const sel = selecionados(), o = OFERTAS[ofertaAtual()];
-    caixas.forEach(c => { c.disabled = c.checked && sel.length === 1; c.closest("label").classList.toggle("marcado", c.checked); });
+    caixas.forEach(c => c.closest("label").classList.toggle("marcado", c.checked));
     const soma = sel.reduce((t, p) => t + OFERTAS[p].preco, 0);
-    $("dica-kit").innerHTML = sel.length === 1 ? `Leve mais um produto e ganhe <b>${PCT} de desconto</b> no pedido.`
-      : `<b>Desconto de ${PCT} aplicado</b> por levar ${sel.length} produtos.`;
+    $("dica-kit").innerHTML = sel.length === 1
+      ? `Inclua mais um produto e o desconto de ${PCT} vale para o pedido inteiro. Escolha abaixo:`
+      : `<b>Desconto de ${PCT} aplicado</b> em todo o pedido.`;
     $("totais").innerHTML = (o.kit
       ? `<div><span>Subtotal</span><s>${brl(soma)}</s></div><div class="desc"><span>Desconto de ${PCT}</span><span>− ${brl(soma - o.preco)}</span></div>` : "")
       + `<div class="total"><span>Total</span><strong id="pix-valor">${brl(o.preco)}</strong></div>`;
   }
-  caixas.forEach(c => c.addEventListener("change", atualizarResumo));
+
   function etapa(id) { modal.querySelectorAll(".etapa").forEach(e => e.classList.toggle("ativa", e.id === id)); }
   function parar() { clearInterval(consulta); clearInterval(relogio); }
 
   function abrir(id) {
     inicial = id;
     const itens = (OFERTAS[id] || OFERTAS.manual).itens;
-    caixas.forEach(c => (c.checked = itens.includes(c.value)));
+    principal = itens[0];
+    montarEscolha(itens.slice(1));
     atualizarResumo();
     ultimoFoco = document.activeElement;
     etapa("etapa-dados"); erro.textContent = "";
