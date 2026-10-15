@@ -1,6 +1,6 @@
 # Instituto Felipe Lopes: portal de infoprodutos e cursos
 
-Portal de vendas do **Instituto Felipe Lopes** (institutofelipelopes.com.br), com uma página por produto (Manual e Simulador oferecem o combo no fim; a Cartilha não). Hospedagem na **Cloudflare (Workers, plano gratuito)**, dados no **Supabase**, pagamento pelo Mercado Pago em duas formas, escolhidas na janela de compra (decidido em 13/10/2026): **Pix com o QR Code no próprio site** (Checkout Transparente, modo `pix-no-site`) e **cartão de crédito em até 12x na página segura do Mercado Pago** (Checkout Pro, o cliente vai e volta para `/obrigado`; os dados do cartão nunca passam pelo site). O modo `checkout` (tudo na página do Mercado Pago) segue disponível e desligado. O repositório se chama `manual-do-empregador` por histórico: o projeto começou como a página de vendas desse e-book.
+Portal de vendas do **Instituto Felipe Lopes** (institutofelipelopes.com.br), com uma página por produto e desconto de 15% oferecido no caixa para quem inclui mais um produto. Hospedagem na **Cloudflare (Workers, plano gratuito)**, dados no **Supabase**, pagamento pelo Mercado Pago em duas formas, escolhidas na janela de compra (decidido em 13/10/2026): **Pix com o QR Code no próprio site** (Checkout Transparente, modo `pix-no-site`) e **cartão de crédito em até 12x na página segura do Mercado Pago** (Checkout Pro, o cliente vai e volta para `/obrigado`; os dados do cartão nunca passam pelo site). O modo `checkout` (tudo na página do Mercado Pago) segue disponível e desligado. O repositório se chama `manual-do-empregador` por histórico: o projeto começou como a página de vendas desse e-book.
 
 ## Produtos
 
@@ -9,19 +9,19 @@ Portal de vendas do **Instituto Felipe Lopes** (institutofelipelopes.com.br), co
 | `manual` | PDF Manual do Empregador (Felipe Lopes e Lais Leite, 42 p., layout na identidade do Instituto desde 13/10/2026) | R$ 47 (de 97) |
 | `cartilha` | PDF Cartilha do Bom Fornecedor (Felipe Lopes, Paulo Uchoa e Virgilio Calmon, 24 p.) | R$ 37 (de 67) |
 | `simulador` | Licença do Simulador Regime Certo (Virgilio Calmon, co-autor) | R$ 97 (de 147) |
-| `combo-gestao` | Manual + Simulador (Combo Gestão Segura) | R$ 117 (de 144, soma dos avulsos) |
+| `kit-...` | 2 ou 3 produtos no mesmo pedido, escolhidos no caixa | soma dos avulsos com 15% de desconto (Manual+Cartilha R$ 71,40; Manual+Simulador R$ 122,40; Cartilha+Simulador R$ 113,90; os 3 R$ 153,85) |
 
-**Decisão (ramo `desconto-15`, em prévia em 15/10/2026):** sem combo; cada produto é vendido separado e, na janela de compra, a "Oferta do caixa" deixa o cliente incluir outro produto com 15% de desconto no pedido inteiro (`DESCONTO_KIT` e ofertas `kit-...` geradas em `assets/catalogo.js`). **Decisão anterior, ainda no `main`:** os produtos são vendidos separados e o único combo é Manual + Simulador. Os preços são de lançamento: abaixo de cada preço (cartões, carrossel, caixas das páginas, combo e janela de compra) aparece "Condição de lançamento" (`.lancamento`), e a nota da seção de preços diz que os valores podem mudar para novas compras. A Cartilha é vendida só avulsa, sem combo nem oferta de upgrade.
+**Decisão (15/10/2026, substitui o Combo Gestão Segura):** não há combo nas páginas; cada produto é vendido separado. Na janela de compra, a "Oferta do caixa" mostra o produto escolhido fixo no topo e os outros como opção: incluindo 2 ou mais produtos, o pedido inteiro tem 15% de desconto (`DESCONTO_KIT`; as ofertas `kit-<produtos>` são geradas sozinhas em `assets/catalogo.js`, ex.: `kit-manual-simulador` R$ 122,40). Preços grandes com centavos quando não são inteiros. Os preços são de lançamento: abaixo de cada preço (cartões, carrossel, caixas das páginas e janela de compra) aparece "Condição de lançamento" (`.lancamento`), e a nota da seção de preços diz que os valores podem mudar para novas compras.
 
-**Fonte única de preços e entregas: `assets/catalogo.js`.** É importado pelas páginas (`assets/app.js`) e pelo servidor (`servidor/rotas/criar-pagamento.js`, `servidor/rotas/criar-pix.js`, `servidor/pedidos.js`, `servidor/licenca.js`). Para mudar preço, prazo da licença (`LICENCA_MESES`) ou criar produto/combo, altere só esse arquivo. Cada oferta pode ter `upgrade`, que aparece como sugestão na janela de compra.
+**Fonte única de preços e entregas: `assets/catalogo.js`.** É importado pelas páginas (`assets/app.js`) e pelo servidor (`servidor/rotas/criar-pagamento.js`, `servidor/rotas/criar-pix.js`, `servidor/pedidos.js`, `servidor/licenca.js`). Para mudar preço, prazo da licença (`LICENCA_MESES`) ou criar produto/combo, altere só esse arquivo. Os kits com desconto são gerados a partir de `PRODUTOS`, então um produto novo entra automaticamente na oferta do caixa.
 
 Para um novo PDF: adicionar em `PRODUTOS` (tipo `pdf`, campo `arquivo`), criar a oferta em `OFERTAS`, enviar o PDF ao bucket `produtos` do Supabase com o mesmo nome e criar a página do produto.
 
 ## Estrutura
 
 - Páginas (HTML estático, sem build; topo e rodapé repetidos em cada arquivo, ao mudar o menu altere todos):
-  - `index.html`: Instituto, vitrine em carrossel dos 3 produtos, Combo Gestão Segura, sobre, equipe, chamada de cursos, dúvidas, contato.
-  - `manual-do-empregador.html`, `cartilha-do-bom-fornecedor.html`, `simulador-tributario.html`: uma página por produto (Manual e Simulador oferecem o combo no fim; a Cartilha não).
+  - `index.html`: Instituto, vitrine em carrossel dos 3 produtos, preços (3 cartões), sobre, equipe, chamada de cursos, dúvidas, contato.
+  - `manual-do-empregador.html`, `cartilha-do-bom-fornecedor.html`, `simulador-tributario.html`: uma página por produto, sem bloco de combo.
   - `obrigado.html`: retorno do Mercado Pago (noindex). Lê `payment_id`/`collection_id` da URL, consulta `api/status-pix` com o e-mail guardado na sessão (ou pede o e-mail) e mostra downloads e licença.
   - `cursos.html`: cursos em preparação, lista de espera (grava em `contatos` com `origem = 'cursos'`).
   - `termos.html`, `privacidade.html`: **minutas**, revisar antes de publicar.
