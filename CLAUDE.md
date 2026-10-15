@@ -9,7 +9,8 @@ Portal de vendas do **Instituto Felipe Lopes** (institutofelipelopes.com.br), co
 | `manual` | PDF Manual do Empregador (Felipe Lopes e Lais Leite, 42 p., layout na identidade do Instituto desde 13/10/2026) | R$ 47 (de 97) |
 | `cartilha` | PDF Cartilha do Bom Fornecedor (Felipe Lopes, Paulo Uchoa e Virgilio Calmon, 24 p.) | R$ 37 (de 67) |
 | `simulador` | Licença do Simulador Regime Certo (Virgilio Calmon, co-autor) | R$ 97 (de 147) |
-| `kit-...` | 2 ou 3 produtos no mesmo pedido, escolhidos no caixa | soma dos avulsos com 15% de desconto (Manual+Cartilha R$ 71,40; Manual+Simulador R$ 122,40; Cartilha+Simulador R$ 113,90; os 3 R$ 153,85) |
+| `advocacia` | PDF Advocacia Empreendedora (Felipe Lopes, 44 p., e-book de gestão para advogados, adicionado em 15/10/2026) | R$ 47 (de 97) |
+| `kit-...` | 2 a 4 produtos no mesmo pedido, escolhidos no caixa | soma dos avulsos com 15% de desconto (ex.: Manual+Cartilha R$ 71,40; Manual+Simulador R$ 122,40; Manual+Advocacia R$ 79,90; os 4 R$ 193,80) |
 
 **Decisão (15/10/2026, substitui o Combo Gestão Segura):** não há combo nas páginas; cada produto é vendido separado. Na janela de compra, a "Oferta do caixa" mostra o produto escolhido fixo no topo e os outros como opção: incluindo 2 ou mais produtos, o pedido inteiro tem 15% de desconto (`DESCONTO_KIT`; as ofertas `kit-<produtos>` são geradas sozinhas em `assets/catalogo.js`, ex.: `kit-manual-simulador` R$ 122,40). Preços grandes com centavos quando não são inteiros. Os preços são de lançamento: abaixo de cada preço (cartões, carrossel, caixas das páginas e janela de compra) aparece "Condição de lançamento" (`.lancamento`), e a nota da seção de preços diz que os valores podem mudar para novas compras.
 
@@ -20,8 +21,8 @@ Para um novo PDF: adicionar em `PRODUTOS` (tipo `pdf`, campo `arquivo`), criar a
 ## Estrutura
 
 - Páginas (HTML estático, sem build; topo e rodapé repetidos em cada arquivo, ao mudar o menu altere todos):
-  - `index.html`: Instituto, vitrine em carrossel dos 3 produtos, preços (3 cartões), sobre, equipe, chamada de cursos, dúvidas, contato.
-  - `manual-do-empregador.html`, `cartilha-do-bom-fornecedor.html`, `simulador-tributario.html`: uma página por produto, sem bloco de combo.
+  - `index.html`: Instituto, vitrine em carrossel dos 4 produtos, preços (4 cartões), sobre, equipe, chamada de cursos, dúvidas, contato.
+  - `manual-do-empregador.html`, `cartilha-do-bom-fornecedor.html`, `simulador-tributario.html`, `advocacia-empreendedora.html`: uma página por produto, sem bloco de combo. O menu usa nomes curtos (Manual, Cartilha, Simulador, Advocacia) para caber numa linha; o rodapé tem os nomes completos.
   - `obrigado.html`: retorno do Mercado Pago (noindex). Lê `payment_id`/`collection_id` da URL, consulta `api/status-pix` com o e-mail guardado na sessão (ou pede o e-mail) e mostra downloads e licença.
   - `cursos.html`: cursos em preparação, lista de espera (grava em `contatos` com `origem = 'cursos'`).
   - `termos.html`, `privacidade.html`: **minutas**, revisar antes de publicar.
@@ -43,7 +44,7 @@ Para um novo PDF: adicionar em `PRODUTOS` (tipo `pdf`, campo `arquivo`), criar a
 - `supabase/schema.sql`: tabelas `pedidos` e `contatos` (RLS ligado, sem políticas públicas), bucket privado `produtos`, visão `vendas_aprovadas`. Idempotente.
 - `wrangler.jsonc`: configuração da Cloudflare. `name` precisa ser igual ao nome do projeto no painel (`instituto-felipe-lopes`). `assets.directory = "."` com `html_handling: auto-trailing-slash` (endereços sem `.html`, `/obrigado.html` redireciona para `/obrigado`); `keep_vars: true`.
 - `.assetsignore`: o que NÃO vai para o ar (servidor, supabase, referencias, node_modules, CLAUDE.md, configs). Ao criar pasta interna nova, incluir aqui.
-- `_redirects` (`/ebook`, `/manual`, `/cartilha`) e `_headers` (cache de imagens e fontes).
+- `_redirects` (`/ebook`, `/manual`, `/cartilha`, `/advocacia`) e `_headers` (cache de imagens e fontes).
 - `package.json`: só o `wrangler` (para `npm run dev` e para a publicação automática).
 - `referencias/`: arquivos originais. Não são publicados (`.assetsignore`).
 

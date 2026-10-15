@@ -40,6 +40,12 @@ export const PRODUTOS = {
     tipo: "licenca",
     pagina: "simulador-tributario.html",
   },
+  advocacia: {
+    nome: "Advocacia Empreendedora",
+    tipo: "pdf",
+    arquivo: "advocacia-empreendedora.pdf",
+    pagina: "advocacia-empreendedora.html",
+  },
 };
 
 export const OFERTAS = {
@@ -63,6 +69,13 @@ export const OFERTAS = {
     itens: ["simulador"],
     preco: 97,
     de: 147,
+  },
+  advocacia: {
+    nome: "Advocacia Empreendedora",
+    descricao: "E-book Advocacia Empreendedora (PDF)",
+    itens: ["advocacia"],
+    preco: 47,
+    de: 97,
   },
 };
 
