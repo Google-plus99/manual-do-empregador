@@ -16,7 +16,6 @@
 // Preços de LANÇAMENTO (definidos em 13/10/2026). O site mostra "Condição de lançamento"
 // abaixo de cada preço; ao encerrar o lançamento, ajuste aqui e tire a frase em LANCAMENTO
 // (gerador das páginas) e em assets/app.js.
-//   upgrade → oferta sugerida na janela de compra para completar o pedido (opcional)
 
 export const LICENCA_MESES = 12;
 
@@ -50,7 +49,6 @@ export const OFERTAS = {
     itens: ["manual"],
     preco: 47,
     de: 97,
-    upgrade: "combo-gestao",
   },
   cartilha: {
     nome: "Cartilha do Bom Fornecedor",
@@ -65,18 +63,39 @@ export const OFERTAS = {
     itens: ["simulador"],
     preco: 97,
     de: 147,
-    upgrade: "combo-gestao",
-  },
-  // Único combo: Manual do Empregador + Simulador Tributário
-  "combo-gestao": {
-    nome: "Combo Gestão Segura",
-    descricao: `Manual do Empregador (PDF) + Simulador Tributário Regime Certo (licença ${LICENCA_MESES} meses)`,
-    itens: ["manual", "simulador"],
-    preco: 117,
   },
 };
 
-// Soma dos produtos avulsos de um combo (para mostrar a economia)
+// ---------------------------------------------------------------------
+// DESCONTO POR QUANTIDADE (no lugar do antigo combo): ao levar 2 ou mais
+// produtos no mesmo pedido, o pedido inteiro tem DESCONTO_KIT de desconto.
+// Os "kits" abaixo são gerados sozinhos, um para cada combinação possível,
+// com id "kit-<produtos na ordem do catálogo>", ex.: "kit-manual-simulador".
+// ---------------------------------------------------------------------
+export const DESCONTO_KIT = 0.15;
+const ORDEM = Object.keys(PRODUTOS);
+const centavos = v => Math.round(v * 100) / 100;
+
+export function idKit(itens) {
+  const lista = ORDEM.filter(p => itens.includes(p));
+  return lista.length === 1 ? lista[0] : "kit-" + lista.join("-");
+}
+
+for (let m = 1; m < 1 << ORDEM.length; m++) {
+  const itens = ORDEM.filter((_, i) => m & (1 << i));
+  if (itens.length < 2) continue;
+  const soma = itens.reduce((t, p) => t + OFERTAS[p].preco, 0);
+  OFERTAS[idKit(itens)] = {
+    nome: itens.length === ORDEM.length ? "Kit completo" : `Kit ${itens.length} produtos`,
+    descricao: itens.map(p => OFERTAS[p].descricao).join(" + ") + ` (${Math.round(DESCONTO_KIT * 100)}% de desconto)`,
+    itens,
+    preco: centavos(soma * (1 - DESCONTO_KIT)),
+    de: soma,
+    kit: true,
+  };
+}
+
+// Soma dos produtos avulsos de um kit (para mostrar a economia)
 export function somaAvulsa(idOferta) {
   return OFERTAS[idOferta].itens.reduce((t, p) => t + (OFERTAS[p]?.preco || 0), 0);
 }

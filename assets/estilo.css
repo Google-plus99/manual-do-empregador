@@ -354,6 +354,21 @@ footer .legal{border-top:1px solid var(--linha);padding-top:22px;font-size:.82re
 .pedido-topo{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
 .pedido-topo strong{font-stretch:118%;font-size:1.15rem;white-space:nowrap}
 .pedido ul{list-style:none;margin-top:6px;font-size:.88rem;color:var(--suave)}
+.pedido-rotulo{font-size:.72rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--dourado);margin-bottom:8px}
+.escolha{display:grid;gap:6px}
+.item-pedido{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:9px 11px;border:1px solid var(--linha);background:rgba(0,0,0,.18);cursor:pointer;font-weight:400;font-size:.92rem;margin:0}
+.item-pedido input{width:17px;height:17px;margin:0;padding:0;accent-color:var(--dourado)}
+.item-pedido b{font-weight:600;white-space:nowrap}
+.item-pedido.marcado{border-color:var(--dourado);background:rgba(201,168,76,.08)}
+.item-pedido:has(input:disabled){cursor:default}
+.dica-kit{font-size:.84rem;color:var(--suave);margin:10px 0 8px;line-height:1.45}
+.dica-kit b{color:var(--dourado)}
+.totais{border-top:1px solid var(--linha);padding-top:8px;display:grid;gap:3px;font-size:.9rem}
+.totais div{display:flex;justify-content:space-between;gap:12px}
+.totais s{color:var(--suave)}
+.totais .desc{color:var(--verde);font-weight:600}
+.totais .total{margin-top:3px;align-items:baseline}
+.totais .total strong{font-stretch:118%;font-size:1.25rem}
 .formas{border:0;padding:0;margin:0 0 14px;display:grid;gap:8px}
 .formas legend{font-size:.88rem;font-weight:600;margin-bottom:8px;padding:0}
 .formas label{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border:1px solid var(--linha);background:var(--superficie-2);cursor:pointer;font-weight:400;margin:0}
@@ -440,3 +455,7 @@ footer .legal{border-top:1px solid var(--linha);padding-top:22px;font-size:.82re
 .flutuante{animation:chamar 2.6s ease-in-out infinite}
 @keyframes chamar{0%,100%{box-shadow:0 0 0 2px #fff,0 10px 26px rgba(0,0,0,.45)}50%{box-shadow:0 0 0 2px #fff,0 0 0 9px rgba(37,211,102,.35),0 10px 26px rgba(0,0,0,.45)}}
 @media(prefers-reduced-motion:reduce){.flutuante{animation:none}}
+/* lista de preços dos kits (desconto de 15% para 2 ou mais produtos) */
+.preco-card .incluso.kit-precos li{display:flex;justify-content:space-between;gap:8px;font-size:.86rem}
+.preco-card .incluso.kit-precos li span{white-space:nowrap}
+.preco-card .incluso.kit-precos li b{white-space:nowrap;color:#fff}

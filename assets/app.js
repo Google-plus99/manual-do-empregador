@@ -2,7 +2,7 @@
 // Comportamento comum a todas as páginas do portal.
 // Preços e produtos vêm de assets/catalogo.js. Dados de contato ficam no CONFIG abaixo.
 
-import { OFERTAS, PRODUTOS, LICENCA_MESES, WHATSAPP, somaAvulsa } from "./catalogo.js";
+import { OFERTAS, PRODUTOS, LICENCA_MESES, WHATSAPP, somaAvulsa, idKit, DESCONTO_KIT } from "./catalogo.js";
 
 /* ====================================================================
    CONFIG: dados de contato e identificação da empresa
@@ -31,7 +31,8 @@ const CONFIG = {
 
 const $ = id => document.getElementById(id);
 const brl = v => Number(v).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-const inteiro = v => Number(v).toLocaleString("pt-BR", { maximumFractionDigits: 0 });
+// preço grande: sem centavos quando é inteiro (47), com centavos quando não é (122,40)
+const inteiro = v => Number(v).toLocaleString("pt-BR", Number.isInteger(+v) ? { maximumFractionDigits: 0 } : { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 const textoLicenca = `${LICENCA_MESES} meses`;
 const linkWhats = (msg = CONFIG.mensagemWhats) => `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(msg)}`;
 const DEMO = !CONFIG.dominiosReais.some(d => location.hostname === d || location.hostname.endsWith("." + d));
@@ -185,7 +186,13 @@ const JANELA = `
 
     <div class="etapa ativa" id="etapa-dados">
       <h3 id="pix-titulo">Finalizar compra</h3>
-      <div class="pedido"><div class="pedido-topo"><span id="pix-nome"></span><strong id="pix-valor"></strong></div><ul id="pix-itens"></ul><p class="lancamento">Condição de lançamento</p></div>
+      <div class="pedido">
+        <div class="pedido-rotulo">Seu pedido</div>
+        <div class="escolha" id="escolha"></div>
+        <p class="dica-kit" id="dica-kit"></p>
+        <div class="totais" id="totais"></div>
+        <p class="lancamento">Condição de lançamento</p>
+      </div>
       <form id="form-pix" novalidate>
         <label>Nome completo <em>*</em><input name="nome" required autocomplete="name"></label>
         <label>E-mail <em>*</em><input name="email" type="email" required autocomplete="email"></label>
@@ -195,7 +202,6 @@ const JANELA = `
           <label><input type="radio" name="forma" value="cartao"><div><b>Cartão de crédito</b><span>Em até 12x, na página segura do Mercado Pago.</span></div></label>
         </fieldset>
         <label id="campo-cpf">CPF <em>*</em><input name="cpf" inputmode="numeric" maxlength="14" placeholder="000.000.000-00"></label>
-        <label class="upgrade" id="upgrade" hidden><input type="checkbox" id="upgrade-check"><div><b id="upgrade-titulo"></b><span id="upgrade-texto"></span></div></label>
         <p class="erro" id="pix-erro" role="alert"></p>
         <button class="btn" type="submit" id="btn-gerar">Gerar QR Code Pix</button>
         <p class="aviso" id="aviso-pagamento">O CPF é exigido pelo Mercado Pago para emitir a cobrança Pix. A licença do simulador, quando incluída, sai no nome informado.</p>
@@ -252,7 +258,6 @@ const JANELA = `
   document.querySelectorAll(".js-whats-modal").forEach(a => { a.href = linkWhats(); a.target = "_blank"; a.rel = "noopener"; });
 
   const modal = $("modal-pix"), form = $("form-pix"), erro = $("pix-erro"), btnGerar = $("btn-gerar");
-  const upgrade = $("upgrade"), upgradeCheck = $("upgrade-check");
   let inicial = null, consulta = null, relogio = null, ultimoFoco = null;
 
   const AVISO_PIX = $("aviso-pagamento").textContent;
@@ -270,28 +275,32 @@ const JANELA = `
   form.querySelectorAll('input[name="forma"]').forEach(r => r.addEventListener("change", () => { erro.textContent = ""; ajustarForma(); }));
   ajustarForma();
 
-  const ofertaAtual = () => (upgradeCheck.checked && OFERTAS[inicial].upgrade) ? OFERTAS[inicial].upgrade : inicial;
-  const nomesItens = itens => itens.map(i => PRODUTOS[i].nome);
+  // Escolha dos produtos: 2 ou mais no mesmo pedido = desconto de DESCONTO_KIT (oferta "kit-...")
+  const PCT = Math.round(DESCONTO_KIT * 100) + "%";
+  $("escolha").innerHTML = Object.keys(PRODUTOS).map(p =>
+    `<label class="item-pedido"><input type="checkbox" value="${p}"><span>${PRODUTOS[p].nome}</span><b>${brl(OFERTAS[p].preco)}</b></label>`).join("");
+  const caixas = [...$("escolha").querySelectorAll("input")];
+  const selecionados = () => caixas.filter(c => c.checked).map(c => c.value);
+  const ofertaAtual = () => idKit(selecionados());
 
   function atualizarResumo() {
-    const id = ofertaAtual(), o = OFERTAS[id];
-    $("pix-nome").textContent = o.nome;
-    $("pix-valor").textContent = brl(o.preco);
-    $("pix-itens").innerHTML = o.itens.length > 1 ? nomesItens(o.itens).map(n => `<li>${n}</li>`).join("") : "";
+    const sel = selecionados(), o = OFERTAS[ofertaAtual()];
+    caixas.forEach(c => { c.disabled = c.checked && sel.length === 1; c.closest("label").classList.toggle("marcado", c.checked); });
+    const soma = sel.reduce((t, p) => t + OFERTAS[p].preco, 0);
+    $("dica-kit").innerHTML = sel.length === 1 ? `Leve mais um produto e ganhe <b>${PCT} de desconto</b> no pedido.`
+      : `<b>Desconto de ${PCT} aplicado</b> por levar ${sel.length} produtos.`;
+    $("totais").innerHTML = (o.kit
+      ? `<div><span>Subtotal</span><s>${brl(soma)}</s></div><div class="desc"><span>Desconto de ${PCT}</span><span>− ${brl(soma - o.preco)}</span></div>` : "")
+      + `<div class="total"><span>Total</span><strong id="pix-valor">${brl(o.preco)}</strong></div>`;
   }
+  caixas.forEach(c => c.addEventListener("change", atualizarResumo));
   function etapa(id) { modal.querySelectorAll(".etapa").forEach(e => e.classList.toggle("ativa", e.id === id)); }
   function parar() { clearInterval(consulta); clearInterval(relogio); }
 
   function abrir(id) {
     inicial = id;
-    upgradeCheck.checked = false;
-    const up = OFERTAS[id].upgrade;
-    upgrade.hidden = !up;
-    if (up) {
-      const novos = OFERTAS[up].itens.filter(i => !OFERTAS[id].itens.includes(i));
-      $("upgrade-titulo").textContent = `Levar também ${nomesItens(novos).join(" e ")} por + ${brl(OFERTAS[up].preco - OFERTAS[id].preco)}`;
-      $("upgrade-texto").textContent = `Seu pedido passa a ser o ${OFERTAS[up].nome}, por ${brl(OFERTAS[up].preco)} no total.`;
-    }
+    const itens = (OFERTAS[id] || OFERTAS.manual).itens;
+    caixas.forEach(c => (c.checked = itens.includes(c.value)));
     atualizarResumo();
     ultimoFoco = document.activeElement;
     etapa("etapa-dados"); erro.textContent = "";
@@ -308,7 +317,6 @@ const JANELA = `
   }
 
   botoesCompra.forEach(b => b.addEventListener("click", e => { e.preventDefault(); abrir(b.dataset.comprar); }));
-  upgradeCheck.addEventListener("change", atualizarResumo);
   $("btn-novo").addEventListener("click", () => etapa("etapa-dados"));
   modal.addEventListener("click", e => { if (e.target === modal || e.target.hasAttribute("data-fechar")) fechar(); });
   document.addEventListener("keydown", e => { if (e.key === "Escape" && modal.classList.contains("aberto")) fechar(); });
