@@ -2,7 +2,7 @@
 // Comportamento comum a todas as páginas do portal.
 // Preços e produtos vêm de assets/catalogo.js. Dados de contato ficam no CONFIG abaixo.
 
-import { OFERTAS, PRODUTOS, LICENCA_MESES, WHATSAPP, somaAvulsa, idKit, DESCONTO_KIT } from "./catalogo.js";
+import { OFERTAS, PRODUTOS, LICENCA_MESES, WHATSAPP, somaAvulsa, idKit, DESCONTO_KIT } from "./catalogo.js?v=20261016";
 
 /* ====================================================================
    CONFIG: dados de contato e identificação da empresa
