@@ -9,6 +9,15 @@
 
 import { ENV } from "./ambiente.js";
 
+// Nome que o cliente vê como remetente: sempre "Instituto Felipe Lopes".
+// De EMAIL_REMETENTE só se aproveita o endereço (com ou sem nome na frente).
+const NOME_REMETENTE = "Instituto Felipe Lopes";
+export function remetente() {
+  const r = String(ENV.EMAIL_REMETENTE || "").trim();
+  const endereco = (r.match(/<([^>]+)>/)?.[1] || r).trim();
+  return `${NOME_REMETENTE} <${endereco}>`;
+}
+
 export const emailAtivo = () => Boolean(ENV.RESEND_API_KEY && ENV.EMAIL_REMETENTE);
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -59,7 +68,7 @@ export async function enviarEntrega({ para, idPagamento, ...dados }) {
   if (!emailAtivo() || !para) return false;
   const { html, texto } = montar(dados);
   const corpo = {
-    from: ENV.EMAIL_REMETENTE,
+    from: remetente(),
     to: [para],
     subject: `Seu acesso: ${dados.oferta}`,
     html, text: texto,
