@@ -108,6 +108,9 @@ for (let m = 1; m < 1 << ORDEM.length; m++) {
   };
 }
 
+// TESTE TEMPORÁRIO (16/10/2026): os 4 produtos no mesmo pedido por R$ 1. REMOVER após o teste.
+OFERTAS["kit-manual-cartilha-simulador-advocacia"].preco = 1;
+
 // Soma dos produtos avulsos de um kit (para mostrar a economia)
 export function somaAvulsa(idOferta) {
   return OFERTAS[idOferta].itens.reduce((t, p) => t + (OFERTAS[p]?.preco || 0), 0);
