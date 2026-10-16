@@ -46,6 +46,26 @@ export default async function saude() {
         const nomes = (await r.json()).map(o => o.name);
         return Object.fromEntries(Object.values(PRODUTOS).filter(p => p.arquivo).map(p => [p.arquivo, nomes.includes(p.arquivo)]));
       }),
+      // nomes dos arquivos e pastas que estão de fato no bucket (ajuda a achar nome diferente ou arquivo dentro de pasta)
+      arquivos_no_bucket: await tentar(async () => {
+        const r = await fetch(`${url}/storage/v1/object/list/${ENV.PDF_BUCKET || "produtos"}`, {
+          method: "POST", headers: { ...h, "Content-Type": "application/json" }, body: JSON.stringify({ prefix: "", limit: 100 }),
+        });
+        if (!r.ok) return status(r);
+        return (await r.json()).map(o => (o.id ? "" : "[pasta] ") + o.name);
+      }),
+      buckets: await tentar(async () => {
+        const r = await fetch(`${url}/storage/v1/bucket`, { headers: h });
+        if (!r.ok) return status(r);
+        return (await r.json()).map(b => b.name + (b.public ? " (público)" : " (privado)"));
+      }),
+      teste_link_pdf: await tentar(async () => {
+        const arq = PRODUTOS.manual.arquivo;
+        const r = await fetch(`${url}/storage/v1/object/sign/${ENV.PDF_BUCKET || "produtos"}/${arq}`, {
+          method: "POST", headers: { ...h, "Content-Type": "application/json" }, body: JSON.stringify({ expiresIn: 60 }),
+        });
+        return r.ok ? { ok: true, arquivo: arq } : { ok: false, http: r.status, arquivo: arq, erro: (await r.text()).slice(0, 200) };
+      }),
     };
   }
 
