@@ -52,7 +52,8 @@ export default async function saude() {
           method: "POST", headers: { ...h, "Content-Type": "application/json" }, body: JSON.stringify({ prefix: "", limit: 100 }),
         });
         if (!r.ok) return status(r);
-        return (await r.json()).map(o => (o.id ? "" : "[pasta] ") + o.name);
+        // nome e tamanho (em KB) de cada arquivo, para conferir se a versão enviada é a mais recente
+        return (await r.json()).map(o => (o.id ? "" : "[pasta] ") + o.name + (o.metadata?.size ? ` (${Math.round(o.metadata.size / 1024)} KB)` : ""));
       }),
       buckets: await tentar(async () => {
         const r = await fetch(`${url}/storage/v1/bucket`, { headers: h });
