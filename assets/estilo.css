@@ -494,3 +494,7 @@ footer .legal{border-top:1px solid var(--linha);padding-top:22px;font-size:.82re
 .ponto-partida .produto-capa{width:100%}
 .ponto-partida>*{min-width:0}
 @media(max-width:900px){.ponto-partida{grid-template-columns:1fr;gap:32px}.ponto-partida .produto-capa{width:min(220px,60%);order:0}}
+
+/* ---------- vídeo de apresentação (simulador) ---------- */
+.video-moldura{margin-top:32px;max-width:960px;border:1px solid var(--dourado);box-shadow:0 30px 60px -30px rgba(0,0,0,.8);background:#000;aspect-ratio:16/9}
+.video-moldura video{display:block;width:100%;height:100%}

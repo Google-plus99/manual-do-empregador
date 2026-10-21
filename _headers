@@ -9,3 +9,6 @@
 /*
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
+
+/assets/video/*
+  Cache-Control: public, max-age=86400
