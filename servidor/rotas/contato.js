@@ -13,7 +13,7 @@ export default async function contato(request) {
   if (b.site) return json({ ok: true });
 
   // De onde veio o contato: formulário geral ou lista de espera dos cursos
-  const origem = ["site", "cursos"].includes(b.origem) ? b.origem : "site";
+  const origem = ["site", "cursos", "consultoria"].includes(b.origem) ? b.origem : "site";
   const nome = limpar(b.nome, 120), email = limpar(b.email, 160), whatsapp = limpar(b.whats, 30), mensagem = limpar(b.msg, 2000);
   if (!nome || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || whatsapp.replace(/\D/g, "").length < 10) {
     return json({ erro: "Dados incompletos." }, 400);

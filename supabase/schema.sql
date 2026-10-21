@@ -29,7 +29,7 @@ create table if not exists public.contatos (
   email      text not null,
   whatsapp   text not null,
   mensagem   text,
-  origem     text default 'site',                   -- 'site' ou 'cursos' (lista de espera)
+  origem     text default 'site',                   -- 'site', 'cursos' (lista de espera) ou 'consultoria'
   criado_em  timestamptz not null default now()
 );
 

@@ -150,13 +150,19 @@ document.querySelectorAll("[data-email]").forEach(el => {
   originais.forEach(c => { const k = c.cloneNode(true); k.setAttribute("aria-hidden", "true"); t.appendChild(k); });
 })();
 
+/* ---------- consultoria: botão do pacote já marca a opção no formulário ---------- */
+document.querySelectorAll("[data-pacote]").forEach(b => b.addEventListener("click", () => {
+  const r = document.querySelector(`input[name="interesse"][value="${b.dataset.pacote}"]`);
+  if (r) r.checked = true;
+}));
+
 /* ---------- formulários (contato e lista de espera) ---------- */
 document.querySelectorAll("form[data-origem]").forEach(form => {
   form.addEventListener("submit", async e => {
     e.preventDefault();
     const f = form.elements, origem = form.dataset.origem;
     const interesses = [...form.querySelectorAll('input[name="interesse"]:checked')].map(i => i.value);
-    const msg = [f.msg?.value, interesses.length ? `Interesse: ${interesses.join(", ")}` : ""].filter(Boolean).join("\n");
+    const msg = [f.msg?.value, interesses.length ? `${origem === "consultoria" ? "Pacote" : "Interesse"}: ${interesses.join(", ")}` : "", f.porte?.value ? `Colaboradores: ${f.porte.value}` : ""].filter(Boolean).join("\n");
     const dados = { nome: f.nome.value, email: f.email.value, whats: f.whats.value, msg, site: f.site.value, origem };
     let salvo = false;
     if (location.protocol.startsWith("http") && !DEMO) {
@@ -170,7 +176,8 @@ document.querySelectorAll("form[data-origem]").forEach(form => {
       form.nextElementSibling?.removeAttribute("hidden");
       return;
     }
-    const texto = `Olá! ${origem === "cursos" ? "Quero ser avisado sobre os cursos do Instituto Felipe Lopes." : "Gostaria de falar com a equipe do Instituto Felipe Lopes."}\n\nNome: ${dados.nome}\nE-mail: ${dados.email}\nWhatsApp: ${dados.whats}` + (msg ? `\n\n${msg}` : "");
+    const abertura = { cursos: "Quero ser avisado sobre os cursos do Instituto Felipe Lopes.", consultoria: "Tenho interesse na consultoria para empresas do Instituto Felipe Lopes." }[origem] || "Gostaria de falar com a equipe do Instituto Felipe Lopes.";
+    const texto = `Olá! ${abertura}\n\nNome: ${dados.nome}\nE-mail: ${dados.email}\nWhatsApp: ${dados.whats}` + (msg ? `\n\n${msg}` : "");
     window.open(linkWhats(texto), "_blank");
   });
 });

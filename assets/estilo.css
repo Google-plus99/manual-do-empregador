@@ -466,3 +466,22 @@ footer .legal{border-top:1px solid var(--linha);padding-top:22px;font-size:.82re
 .preco-card .incluso.kit-precos li{display:flex;justify-content:space-between;gap:8px;font-size:.86rem}
 .preco-card .incluso.kit-precos li span{white-space:nowrap}
 .preco-card .incluso.kit-precos li b{white-space:nowrap;color:#fff}
+
+/* ---------- consultoria (21/10/2026) ---------- */
+.precos.tres{grid-template-columns:repeat(3,1fr)}
+@media(max-width:1060px){.precos.tres{grid-template-columns:1fr;max-width:460px}}
+.pacote .indicado{font-size:.88rem;color:var(--suave);margin:0 0 16px}
+.pacote .nota-pacote{font-size:.76rem;color:var(--suave);margin:-6px 0 14px;line-height:1.45}
+.pacote .btn{width:100%}
+.destaques.quatro{grid-template-columns:repeat(4,1fr)}
+@media(max-width:1060px){.destaques.quatro{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.destaques.quatro{grid-template-columns:1fr}}
+.passo-n{display:block;font-family:"Anton",sans-serif;font-size:2.2rem;line-height:1;color:var(--dourado);margin-bottom:10px}
+.tabela-rolagem{overflow-x:auto;margin-top:22px}
+.tabela{width:100%;border-collapse:collapse;font-size:.92rem;min-width:420px}
+.tabela th{background:var(--nevoa);color:#fff;text-align:left;padding:12px 14px;font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;border-bottom:2px solid var(--dourado)}
+.tabela td{padding:12px 14px;border-bottom:1px solid var(--linha);vertical-align:top}
+.tabela td:first-child{font-weight:600}
+.tabela tbody tr:nth-child(even) td{background:var(--superficie)}
+.duas-colunas>*{min-width:0}
+.pacote .rotulo-preco{font-size:.78rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--suave);margin-top:4px}
