@@ -485,3 +485,7 @@ footer .legal{border-top:1px solid var(--linha);padding-top:22px;font-size:.82re
 .tabela tbody tr:nth-child(even) td{background:var(--superficie)}
 .duas-colunas>*{min-width:0}
 .pacote .rotulo-preco{font-size:.78rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--suave);margin-top:4px}
+/* arte da consultoria no topo da página (maior que uma capa de e-book) */
+.produto-capa.arte{width:min(470px,100%)}
+.produto-capa.arte img{box-shadow:0 40px 70px -30px rgba(0,0,0,.95)}
+@media(max-width:900px){.produto-capa.arte{width:min(380px,100%)}}
