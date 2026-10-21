@@ -498,3 +498,13 @@ footer .legal{border-top:1px solid var(--linha);padding-top:22px;font-size:.82re
 /* ---------- vídeo de apresentação (simulador) ---------- */
 .video-moldura{margin-top:32px;max-width:960px;border:1px solid var(--dourado);box-shadow:0 30px 60px -30px rgba(0,0,0,.8);background:#000;aspect-ratio:16/9}
 .video-moldura video{display:block;width:100%;height:100%}
+
+/* ---------- vídeo vertical (página do Manual) ---------- */
+.video-lado{display:grid;grid-template-columns:1fr 340px;gap:64px;align-items:center}
+.video-lado>*{min-width:0}
+.video-vertical{justify-self:center;width:100%;max-width:340px;aspect-ratio:9/16;border:1px solid var(--dourado);background:#000;box-shadow:0 34px 60px -26px rgba(0,0,0,.9)}
+.video-vertical video{display:block;width:100%;height:100%;object-fit:cover}
+@media(max-width:900px){.video-lado{grid-template-columns:1fr;gap:32px}.video-vertical{max-width:300px}}
+.escuro .checks li::before{border-color:var(--dourado)}
+.video-lado .intro{margin-bottom:20px}
+.nevoa .caixa-preco{background:var(--superficie)}
