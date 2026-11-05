@@ -8,7 +8,7 @@ import { normalizarUrlSb } from "../supabase.js";
 import { DESTINO_CONTATOS } from "../email.js";
 
 const NOMES = ["MP_ACCESS_TOKEN", "SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "URL_SITE",
-  "LIC_CHAVE_PRIVADA", "LIC_DOMINIO", "RESEND_API_KEY", "EMAIL_REMETENTE"];
+  "LIC_CHAVE_PRIVADA", "LIC_DOMINIO", "RESEND_API_KEY"];
 
 const tem = n => Boolean((ENV[n] || "").trim());
 
@@ -91,11 +91,11 @@ export default async function saude() {
 
   // ---------- Resend ----------
   if (tem("RESEND_API_KEY")) {
-    const rem = (ENV.EMAIL_REMETENTE || "").trim();
+    const rem = DESTINO_CONTATOS();
     const dominio = (rem.match(/@([^>\s]+)/) || [])[1] || null;
     res.resend = {
       dominio_do_remetente: dominio,
-      contatos_do_formulario_vao_para: DESTINO_CONTATOS(),
+      endereco_unico: DESTINO_CONTATOS(),
       dominio: await tentar(async () => {
         const r = await fetch("https://api.resend.com/domains", { headers: { Authorization: `Bearer ${ENV.RESEND_API_KEY.trim()}` } });
         if (r.status === 401 || r.status === 403) return { ok: null, aviso: "chave só de envio (normal); confira o domínio no painel do Resend" };

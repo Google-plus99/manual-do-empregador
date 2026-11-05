@@ -1,24 +1,24 @@
 // servidor/email.js
 // Envia ao comprador, por e-mail, o que ele comprou: links dos PDFs e chave de licença.
 // Usa o Resend (resend.com) pela API REST, sem dependências.
+// Endereço único do Instituto: contatos@institutofelipelopes.com.br (decidido em 05/11/2026).
+// Os e-mails saem dele, as respostas dos clientes voltam para ele e os avisos do formulário
+// chegam nele. A caixa é recebida pelo Email Routing da Cloudflare (encaminha para o Gmail).
 // Variáveis no painel da Cloudflare:
-//   RESEND_API_KEY   chave da API do Resend
-//   EMAIL_REMETENTE  ex.: Instituto Felipe Lopes <contato@institutofelipelopes.com.br>
-//   EMAIL_RESPOSTA   (opcional) e-mail que recebe as respostas do cliente
-// Sem RESEND_API_KEY, nada é enviado e a venda segue normalmente.
+//   RESEND_API_KEY   chave da API do Resend (sem ela, nada é enviado e a venda segue normalmente)
+//   EMAIL_REMETENTE  não é mais usada; pode ser apagada do painel
+//   EMAIL_CONTATOS   (opcional) troca o endereço único acima, se um dia for preciso
 
 import { ENV } from "./ambiente.js";
 
-// Nome que o cliente vê como remetente: sempre "Instituto Felipe Lopes".
-// De EMAIL_REMETENTE só se aproveita o endereço (com ou sem nome na frente).
 const NOME_REMETENTE = "Instituto Felipe Lopes";
-export function remetente() {
-  const r = String(ENV.EMAIL_REMETENTE || "").trim();
-  const endereco = (r.match(/<([^>]+)>/)?.[1] || r).trim();
-  return `${NOME_REMETENTE} <${endereco}>`;
-}
+export const EMAIL_OFICIAL = () => String(ENV.EMAIL_CONTATOS || "contatos@institutofelipelopes.com.br").trim();
+export const DESTINO_CONTATOS = EMAIL_OFICIAL;
 
-export const emailAtivo = () => Boolean(ENV.RESEND_API_KEY && ENV.EMAIL_REMETENTE);
+// Nome que o cliente vê como remetente: sempre "Instituto Felipe Lopes <contatos@...>"
+export const remetente = () => `${NOME_REMETENTE} <${EMAIL_OFICIAL()}>`;
+
+export const emailAtivo = () => Boolean(ENV.RESEND_API_KEY);
 
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const dataBR = iso => String(iso || "").slice(0, 10).split("-").reverse().join("/");
@@ -73,7 +73,7 @@ export async function enviarEntrega({ para, idPagamento, ...dados }) {
     subject: `Seu acesso: ${dados.oferta}`,
     html, text: texto,
   };
-  if (ENV.EMAIL_RESPOSTA) corpo.reply_to = ENV.EMAIL_RESPOSTA;
+  corpo.reply_to = EMAIL_OFICIAL();
   const r = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
@@ -90,10 +90,9 @@ export async function enviarEntrega({ para, idPagamento, ...dados }) {
 
 // ---------------------------------------------------------------------
 // Aviso de novo contato pelos formulários do site (página inicial, cursos e consultoria).
-// Vai para EMAIL_CONTATOS (padrão contatos@institutofelipelopes.com.br), com
+// Vai para o endereço único (contatos@institutofelipelopes.com.br), com
 // "responder para" no e-mail do visitante: basta clicar em Responder.
 // ---------------------------------------------------------------------
-export const DESTINO_CONTATOS = () => String(ENV.EMAIL_CONTATOS || "contatos@institutofelipelopes.com.br").trim();
 
 const TITULO_ORIGEM = {
   site: "Fale com a equipe (site)",
