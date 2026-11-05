@@ -87,3 +87,44 @@ export async function enviarEntrega({ para, idPagamento, ...dados }) {
   if (!r.ok) throw new Error(`Resend ${r.status}: ${(await r.text()).slice(0, 300)}`);
   return true;
 }
+
+// ---------------------------------------------------------------------
+// Aviso de novo contato pelos formulários do site (página inicial, cursos e consultoria).
+// Vai para EMAIL_CONTATOS (padrão contatos@institutofelipelopes.com.br), com
+// "responder para" no e-mail do visitante: basta clicar em Responder.
+// ---------------------------------------------------------------------
+export const DESTINO_CONTATOS = () => String(ENV.EMAIL_CONTATOS || "contatos@institutofelipelopes.com.br").trim();
+
+const TITULO_ORIGEM = {
+  site: "Fale com a equipe (site)",
+  cursos: "Lista de espera dos cursos",
+  consultoria: "Consultoria para empresas",
+};
+
+export async function enviarContato({ nome, email, whatsapp, mensagem, origem }) {
+  if (!emailAtivo()) return false;
+  const vinho = "#3c181a";
+  const assunto = `Novo contato: ${TITULO_ORIGEM[origem] || "site"}, ${nome}`;
+  const zap = String(whatsapp || "").replace(/\D/g, "");
+  const linkZap = zap ? `https://wa.me/${zap.length <= 11 ? "55" + zap : zap}` : "";
+  const linha = (rotulo, valor) => `<tr><td style="padding:6px 12px 6px 0;color:#625a5c;vertical-align:top">${rotulo}</td><td style="padding:6px 0">${valor}</td></tr>`;
+  const html = `<div style="font-family:Arial,Helvetica,sans-serif;color:#2b2627;max-width:560px;margin:0 auto;line-height:1.55">
+  <p style="font-size:13px;letter-spacing:2px;color:${vinho};font-weight:bold;margin:0 0 18px">INSTITUTO FELIPE LOPES</p>
+  <h1 style="font-size:20px;margin:0 0 14px">Novo contato pelo site</h1>
+  <table style="border-collapse:collapse;font-size:15px">
+  ${linha("Formulário", esc(TITULO_ORIGEM[origem] || origem))}
+  ${linha("Nome", esc(nome))}
+  ${linha("E-mail", `<a href="mailto:${esc(email)}" style="color:${vinho}">${esc(email)}</a>`)}
+  ${linha("WhatsApp", linkZap ? `<a href="${linkZap}" style="color:${vinho}">${esc(whatsapp)}</a>` : esc(whatsapp))}
+  </table>
+  ${mensagem ? `<h2 style="font-size:16px;margin:22px 0 8px">Mensagem</h2><div style="white-space:pre-wrap;background:#f4f2f2;padding:12px">${esc(mensagem)}</div>` : ""}
+  <p style="margin-top:24px;font-size:13px;color:#625a5c">Para responder, use o botão Responder: a resposta vai direto para ${esc(email)}.</p></div>`;
+  const texto = `Novo contato pelo site\nFormulário: ${TITULO_ORIGEM[origem] || origem}\nNome: ${nome}\nE-mail: ${email}\nWhatsApp: ${whatsapp}${linkZap ? " (" + linkZap + ")" : ""}\n` + (mensagem ? `\nMensagem:\n${mensagem}\n` : "");
+  const r = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${ENV.RESEND_API_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ from: remetente(), to: [DESTINO_CONTATOS()], reply_to: email, subject: assunto, html, text: texto }),
+  });
+  if (!r.ok) throw new Error(`Resend ${r.status}: ${(await r.text()).slice(0, 300)}`);
+  return true;
+}

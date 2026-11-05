@@ -43,7 +43,7 @@ Para um novo PDF: adicionar em `PRODUTOS` (tipo `pdf`, campo `arquivo`), criar a
   - `supabase.js`: REST com a service_role (chave legacy `eyJ...` vai no `apikey` e no `Authorization`; chave nova `sb_secret_...` só no `apikey`; valores com espaço são aparados). Sem variáveis, não grava nada e o site segue vendendo.
   - `email.js`: e-mail de entrega pelo Resend (API REST). Mandado uma única vez por pagamento (trava `email_enviado_em` em `pedidos` e chave de idempotência `entrega-<id>`), com links dos PDFs válidos por 7 dias e a chave de licença.
   - `rotas/saude.js`: diagnóstico em `/api/saude` (GET). Diz se cada variável existe e se Supabase (tabelas e PDFs no bucket), chave de licença, Mercado Pago e Resend respondem; nunca devolve valores de chaves. Primeiro lugar a olhar quando algo não grava ou não entrega.
-  - `rotas/contato.js`: formulários; `origem` = `site` ou `cursos`; campo invisível `site` contra robôs; `origem` aceita também `consultoria`.
+  - `rotas/contato.js`: formulários; `origem` = `site`, `cursos` ou `consultoria`; campo invisível `site` contra robôs. Grava em `contatos` e, desde 05/11/2026, avisa por e-mail (Resend, `enviarContato` em `email.js`) em `contatos@institutofelipelopes.com.br` (variável opcional `EMAIL_CONTATOS`), com "responder para" no e-mail do visitante. Uma falha num dos dois não impede o outro.
 - `supabase/schema.sql`: tabelas `pedidos` e `contatos` (RLS ligado, sem políticas públicas), bucket privado `produtos`, visão `vendas_aprovadas`. Idempotente.
 - `wrangler.jsonc`: configuração da Cloudflare. `name` precisa ser igual ao nome do projeto no painel (`instituto-felipe-lopes`). `assets.directory = "."` com `html_handling: auto-trailing-slash` (endereços sem `.html`, `/obrigado.html` redireciona para `/obrigado`); `keep_vars: true`.
 - `.assetsignore`: o que NÃO vai para o ar (servidor, supabase, referencias, node_modules, CLAUDE.md, configs). Ao criar pasta interna nova, incluir aqui.
@@ -68,6 +68,7 @@ Variáveis em Workers & Pages > projeto > Settings > Variables and Secrets, toda
 - `LIC_DOMINIO`: institutofelipelopes.com.br (a licença só funciona nesse domínio).
 - `PDF_BUCKET` (opcional, padrão `produtos`).
 - `RESEND_API_KEY` e `EMAIL_REMETENTE` (ex.: `Instituto Felipe Lopes <contato@institutofelipelopes.com.br>`): ativam o e-mail de entrega. `EMAIL_RESPOSTA` opcional. Sem elas, a venda funciona e só não manda e-mail.
+- `EMAIL_CONTATOS` (opcional, padrão `contatos@institutofelipelopes.com.br`): para onde vão os avisos dos formulários. A caixa contatos@ é recebida pelo Email Routing da Cloudflare (encaminha para a caixa pessoal) e as respostas saem pelo Gmail com "Enviar e-mail como" via SMTP do Resend (`smtp.resend.com`, 465, usuário `resend`, senha = chave de API própria).
 
 Nunca colocar token ou chave privada no HTML nem no repositório.
 

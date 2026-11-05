@@ -5,6 +5,7 @@
 import { ENV, json } from "../ambiente.js";
 import { PRODUTOS } from "../../assets/catalogo.js";
 import { normalizarUrlSb } from "../supabase.js";
+import { DESTINO_CONTATOS } from "../email.js";
 
 const NOMES = ["MP_ACCESS_TOKEN", "SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "URL_SITE",
   "LIC_CHAVE_PRIVADA", "LIC_DOMINIO", "RESEND_API_KEY", "EMAIL_REMETENTE"];
@@ -94,6 +95,7 @@ export default async function saude() {
     const dominio = (rem.match(/@([^>\s]+)/) || [])[1] || null;
     res.resend = {
       dominio_do_remetente: dominio,
+      contatos_do_formulario_vao_para: DESTINO_CONTATOS(),
       dominio: await tentar(async () => {
         const r = await fetch("https://api.resend.com/domains", { headers: { Authorization: `Bearer ${ENV.RESEND_API_KEY.trim()}` } });
         if (r.status === 401 || r.status === 403) return { ok: null, aviso: "chave só de envio (normal); confira o domínio no painel do Resend" };
