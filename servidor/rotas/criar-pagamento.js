@@ -38,6 +38,9 @@ export default async function criarPagamento(request) {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({ erro: "Informe um e-mail válido." }, 400);
 
   const o = OFERTAS[oferta];
+  // Consultoria (serviço): WhatsApp obrigatório para agendar a primeira reunião
+  const whatsapp = limpar(b.whats, 30);
+  if (o.servico && whatsapp.replace(/\D/g, "").length < 10) return json({ erro: "Informe o WhatsApp com DDD." }, 400);
   const site = enderecoSite(request);
   const [primeiro, ...resto] = nome.split(" ");
 
@@ -52,7 +55,7 @@ export default async function criarPagamento(request) {
     }],
     payer: { name: primeiro, surname: resto.join(" "), email },
     external_reference: `ifl:${oferta}`,
-    metadata: { oferta, nome, email },
+    metadata: { oferta, nome, email, ...(whatsapp ? { whatsapp } : {}) },
     back_urls: {
       success: `${site}/obrigado`,
       pending: `${site}/obrigado`,

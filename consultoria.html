@@ -121,7 +121,7 @@
         <h3>Check-up express</h3>
         <p class="desc">Um raio-x rápido e objetivo da situação trabalhista da sua empresa.</p>
         <div class="rotulo-preco">Investimento</div>
-        <div class="preco"><small>R$</small> 1.997</div>
+        <div class="preco"><small>R$</small> <span data-preco="consultoria-bronze">1.997</span></div>
         <p class="lancamento">Sessão única</p>
         <ul class="incluso">
           <li>Reunião de diagnóstico de 1h30</li>
@@ -130,15 +130,18 @@
         </ul>
         
         <p class="indicado"><b>Indicado para:</b> quem quer identificar riscos antes que se tornem passivos trabalhistas.</p>
-        <a class="btn" href="#contratar" data-pacote="Bronze: Check-up express">Quero este pacote</a>
+<div class="acoes-pacote">
+          <button class="btn" type="button" data-comprar="consultoria-bronze">Contratar agora</button>
+          <a class="btn btn-contorno" href="#contratar" data-pacote="Bronze: Check-up express">Tirar dúvidas antes</a>
+        </div>
       </article>
       <article class="preco-card pacote">
         <span class="tipo">Prata</span>
         <h3>Elite DP</h3>
         <p class="desc">Soluções para fortalecer a gestão trabalhista com segurança e previsibilidade.</p>
-        <div class="rotulo-preco">A partir de</div>
-        <div class="preco"><small>R$</small> 5.990</div>
-        <p class="lancamento">Equipes de até 10 pessoas</p>
+        <div class="rotulo-preco">Investimento</div>
+        <div class="preco"><small>R$</small> <span data-preco="consultoria-prata">5.990</span></div>
+        <p class="lancamento">Equipes de até 10 pessoas. Equipe maior? <a href="#contratar" data-pacote="Prata: Elite DP">Fale com a gente</a></p>
         <ul class="incluso">
           <li>Workshop intensivo de 4 horas, presencial ou online ao vivo</li>
           <li>Baseado no método do Manual do Empregador</li>
@@ -147,15 +150,26 @@
         </ul>
         <p class="nota-pacote">*Cobre questões objetivas de aplicação do conteúdo do treinamento (admissão, jornada, desligamento simples). Não inclui elaboração de peças, apoio em fiscalização ou processo, nem novos treinamentos.</p>
         <p class="indicado"><b>Indicado para:</b> empresas com Departamento Pessoal próprio que precisa de diretrizes claras e atualizadas.</p>
-        <a class="btn" href="#contratar" data-pacote="Prata: Elite DP">Quero este pacote</a>
+<div class="acoes-pacote">
+          <button class="btn" type="button" data-comprar="consultoria-prata">Contratar agora</button>
+          <a class="btn btn-contorno" href="#contratar" data-pacote="Prata: Elite DP">Tirar dúvidas antes</a>
+        </div>
       </article>
       <article class="preco-card pacote">
         <span class="tipo">Ouro</span>
         <h3>Manual na prática</h3>
         <p class="desc">Para estruturar e blindar a gestão trabalhista com mais profundidade.</p>
-        <div class="rotulo-preco">A partir de</div>
-        <div class="preco"><small>R$</small> 8.990</div>
-        <p class="lancamento">Valor por porte da empresa abaixo</p>
+        <label class="porte-ouro">Porte da empresa
+          <select data-porte-ouro>
+            <option value="consultoria-ouro-10">Até 10 colaboradores</option>
+            <option value="consultoria-ouro-50">De 11 a 50 colaboradores</option>
+            <option value="consultoria-ouro-150">De 51 a 150 colaboradores</option>
+            <option value="">Acima de 150 colaboradores</option>
+          </select>
+        </label>
+        <div class="rotulo-preco">Investimento</div>
+        <div class="preco"><small>R$</small> <span data-preco-ouro>8.990</span></div>
+        <p class="lancamento sob-consulta" hidden>Sob consulta: fale com a equipe para receber a proposta.</p>
         <ul class="incluso">
           <li>Tudo do pacote Prata</li>
           <li>Workshop intensivo de 8 horas, presencial ou online ao vivo</li>
@@ -167,9 +181,13 @@
         </ul>
         <p class="nota-pacote">*Inclui elaboração de modelos de documentos e apoio consultivo em fiscalização ou processo.</p>
         <p class="indicado"><b>Indicado para:</b> empresas que desejam estruturar e blindar a gestão com mais profundidade.</p>
-        <a class="btn" href="#contratar" data-pacote="Ouro: Manual na prática">Quero este pacote</a>
+<div class="acoes-pacote">
+          <button class="btn" type="button" data-comprar="consultoria-ouro-10">Contratar agora</button>
+          <a class="btn btn-contorno" href="#contratar" data-pacote="Ouro: Manual na prática">Tirar dúvidas antes</a>
+        </div>
       </article>
     </div>
+    <p class="nota nota-pacotes">Pagamento via Pix (CPF ou CNPJ) ou cartão de crédito em até 12x. Depois da confirmação, a equipe do Instituto entra em contato pelo WhatsApp para agendar a primeira reunião. Comprou o Manual do Empregador nos últimos 30 dias? <a class="js-whats-credito-pag" href="#">Fale com a equipe antes de pagar</a> para abater o valor do e-book.</p>
   </div>
 </section>
 
@@ -239,8 +257,8 @@
 <section class="contato" id="contratar">
   <div class="container">
     <div>
-      <h2>Agende o seu check-up trabalhista</h2>
-      <p class="intro">Previna riscos antes que eles se tornem problemas. Preencha e continue a conversa com a equipe do Instituto pelo WhatsApp.</p>
+      <h2>Prefere conversar antes de contratar?</h2>
+      <p class="intro">Tire suas dúvidas sobre os pacotes, o porte da sua empresa ou uma proposta sob medida. Preencha e continue a conversa com a equipe do Instituto pelo WhatsApp.</p>
     </div>
     <form data-origem="consultoria">
       <label>Nome completo <em>*</em><input name="nome" required autocomplete="name"></label>

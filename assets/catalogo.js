@@ -108,6 +108,23 @@ for (let m = 1; m < 1 << ORDEM.length; m++) {
   };
 }
 
+// ---------------------------------------------------------------------
+// CONSULTORIA PARA EMPRESAS (serviço, vendida em consultoria.html; decidido em 06/11/2026).
+// Não entra na oferta do caixa nem nos kits e não entrega arquivo: depois do pagamento,
+// o cliente recebe a confirmação e a equipe agenda a primeira reunião pelo WhatsApp.
+// Prata acima de 10 pessoas e Ouro acima de 150 colaboradores: só por contato.
+// ---------------------------------------------------------------------
+export const CONSULTORIA = {
+  "consultoria-bronze":   { pacote: "Bronze", nome: "Consultoria Bronze: Check-up express", detalhe: "sessão única", preco: 1997 },
+  "consultoria-prata":    { pacote: "Prata", nome: "Consultoria Prata: Elite DP", detalhe: "equipes de até 10 pessoas", preco: 5990 },
+  "consultoria-ouro-10":  { pacote: "Ouro", nome: "Consultoria Ouro: Manual na prática", detalhe: "até 10 colaboradores", preco: 8990 },
+  "consultoria-ouro-50":  { pacote: "Ouro", nome: "Consultoria Ouro: Manual na prática", detalhe: "de 11 a 50 colaboradores", preco: 13990 },
+  "consultoria-ouro-150": { pacote: "Ouro", nome: "Consultoria Ouro: Manual na prática", detalhe: "de 51 a 150 colaboradores", preco: 20990 },
+};
+for (const [id, c] of Object.entries(CONSULTORIA)) {
+  OFERTAS[id] = { nome: c.nome, descricao: `${c.nome} (${c.detalhe})`, detalhe: c.detalhe, itens: [], preco: c.preco, servico: true };
+}
+
 // Soma dos produtos avulsos de um kit (para mostrar a economia)
 export function somaAvulsa(idOferta) {
   return OFERTAS[idOferta].itens.reduce((t, p) => t + (OFERTAS[p]?.preco || 0), 0);

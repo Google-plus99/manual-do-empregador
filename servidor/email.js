@@ -23,7 +23,8 @@ export const emailAtivo = () => Boolean(ENV.RESEND_API_KEY);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 const dataBR = iso => String(iso || "").slice(0, 10).split("-").reverse().join("/");
 
-function montar({ nome, oferta, downloads = [], licenca, linkSimulador, whatsapp }) {
+function montar({ nome, oferta, servico, downloads = [], licenca, linkSimulador, whatsapp }) {
+  if (servico) return montarServico({ nome, oferta, servico, whatsapp });
   const primeiro = String(nome || "").trim().split(/\s+/)[0] || "Olá";
   const vinho = "#3c181a";
   const botao = (href, texto) =>
@@ -64,13 +65,32 @@ function montar({ nome, oferta, downloads = [], licenca, linkSimulador, whatsapp
   return { html, texto };
 }
 
+// Consultoria: confirmação da contratação e próximo passo (agendar a primeira reunião)
+function montarServico({ nome, oferta, servico, whatsapp }) {
+  const primeiro = String(nome || "").trim().split(/\s+/)[0] || "Olá";
+  const vinho = "#3c181a";
+  const msg = encodeURIComponent(`Olá! Contratei a ${oferta} (${servico}) pelo site e quero agendar a primeira reunião.`);
+  const zap = whatsapp ? `https://wa.me/${whatsapp}?text=${msg}` : "";
+  const html = `<div style="font-family:Arial,Helvetica,sans-serif;color:#2b2627;max-width:560px;margin:0 auto;line-height:1.55">
+  <p style="font-size:13px;letter-spacing:2px;color:${vinho};font-weight:bold;margin:0 0 18px">INSTITUTO FELIPE LOPES</p>
+  <h1 style="font-size:22px;margin:0 0 12px">${esc(primeiro)}, sua consultoria foi confirmada</h1>
+  <p>Obrigado por contratar a <b>${esc(oferta)}</b> (${esc(servico)}).</p>
+  <h2 style="font-size:17px;margin:26px 0 8px">Próximo passo</h2>
+  <p>A equipe do Instituto vai entrar em contato pelo WhatsApp informado na compra para agendar a primeira reunião, em que entendemos o seu negócio, os objetivos e os principais desafios trabalhistas.</p>
+  ${zap ? `<p>Se preferir, adiante o agendamento agora:</p><p style="margin:6px 0"><a href="${esc(zap)}" style="display:inline-block;background:${vinho};color:#fff;text-decoration:none;font-weight:bold;padding:12px 22px">Agendar pelo WhatsApp</a></p>` : ""}
+  <p style="margin-top:28px;font-size:13px;color:#625a5c">Dúvidas? Responda este e-mail.</p>
+  <p style="font-size:13px;color:#625a5c">Instituto Felipe Lopes</p></div>`;
+  const texto = `${primeiro}, sua consultoria foi confirmada.\nObrigado por contratar a ${oferta} (${servico}).\n\nPRÓXIMO PASSO\nA equipe do Instituto vai entrar em contato pelo WhatsApp informado na compra para agendar a primeira reunião.\n${zap ? "Se preferir, adiante o agendamento: " + zap + "\n" : ""}\nDúvidas? Responda este e-mail.\nInstituto Felipe Lopes`;
+  return { html, texto };
+}
+
 export async function enviarEntrega({ para, idPagamento, ...dados }) {
   if (!emailAtivo() || !para) return false;
   const { html, texto } = montar(dados);
   const corpo = {
     from: remetente(),
     to: [para],
-    subject: `Seu acesso: ${dados.oferta}`,
+    subject: dados.servico ? `Consultoria confirmada: ${dados.oferta}` : `Seu acesso: ${dados.oferta}`,
     html, text: texto,
   };
   corpo.reply_to = EMAIL_OFICIAL();
@@ -123,6 +143,38 @@ export async function enviarContato({ nome, email, whatsapp, mensagem, origem })
     method: "POST",
     headers: { Authorization: `Bearer ${ENV.RESEND_API_KEY}`, "Content-Type": "application/json" },
     body: JSON.stringify({ from: remetente(), to: [DESTINO_CONTATOS()], reply_to: email, subject: assunto, html, text: texto }),
+  });
+  if (!r.ok) throw new Error(`Resend ${r.status}: ${(await r.text()).slice(0, 300)}`);
+  return true;
+}
+
+// ---------------------------------------------------------------------
+// Aviso de venda da consultoria para a equipe (contatos@), com os dados para agendar.
+// ---------------------------------------------------------------------
+export async function enviarAvisoVenda({ idPagamento, nome, email, whatsapp, oferta, detalhe, valor, forma }) {
+  if (!emailAtivo()) return false;
+  const vinho = "#3c181a";
+  const zap = String(whatsapp || "").replace(/\D/g, "");
+  const linkZap = zap ? `https://wa.me/${zap.length <= 11 ? "55" + zap : zap}` : "";
+  const valorBR = Number(valor || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  const linha = (r, v) => `<tr><td style="padding:6px 12px 6px 0;color:#625a5c;vertical-align:top">${r}</td><td style="padding:6px 0">${v}</td></tr>`;
+  const html = `<div style="font-family:Arial,Helvetica,sans-serif;color:#2b2627;max-width:560px;margin:0 auto;line-height:1.55">
+  <p style="font-size:13px;letter-spacing:2px;color:${vinho};font-weight:bold;margin:0 0 18px">INSTITUTO FELIPE LOPES</p>
+  <h1 style="font-size:20px;margin:0 0 14px">Consultoria vendida pelo site</h1>
+  <table style="border-collapse:collapse;font-size:15px">
+  ${linha("Pacote", `${esc(oferta)} (${esc(detalhe)})`)}
+  ${linha("Valor", `${esc(valorBR)}, ${esc(forma)}`)}
+  ${linha("Cliente", esc(nome))}
+  ${linha("E-mail", `<a href="mailto:${esc(email)}" style="color:${vinho}">${esc(email)}</a>`)}
+  ${linha("WhatsApp", linkZap ? `<a href="${linkZap}" style="color:${vinho}">${esc(whatsapp)}</a>` : "não informado")}
+  ${linha("Pagamento", esc(idPagamento))}
+  </table>
+  <p style="margin-top:22px"><b>Próximo passo:</b> entrar em contato com o cliente para agendar a primeira reunião.</p></div>`;
+  const texto = `Consultoria vendida pelo site\nPacote: ${oferta} (${detalhe})\nValor: ${valorBR}, ${forma}\nCliente: ${nome}\nE-mail: ${email}\nWhatsApp: ${whatsapp || "não informado"}${linkZap ? " (" + linkZap + ")" : ""}\nPagamento: ${idPagamento}\n\nPróximo passo: agendar a primeira reunião.`;
+  const r = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${ENV.RESEND_API_KEY}`, "Content-Type": "application/json", "Idempotency-Key": `venda-${idPagamento}` },
+    body: JSON.stringify({ from: remetente(), to: [DESTINO_CONTATOS()], reply_to: email || undefined, subject: `Consultoria vendida: ${oferta}, ${nome}`, html, text: texto }),
   });
   if (!r.ok) throw new Error(`Resend ${r.status}: ${(await r.text()).slice(0, 300)}`);
   return true;

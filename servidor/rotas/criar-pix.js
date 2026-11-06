@@ -24,6 +24,18 @@ function cpfValido(cpf) {
   return true;
 }
 
+function cnpjValido(c) {
+  c = soNumeros(c);
+  if (c.length !== 14 || /^(\d)\1{13}$/.test(c)) return false;
+  const dv = n => {
+    let soma = 0, peso = n - 7;
+    for (let i = 0; i < n; i++) { soma += Number(c[i]) * peso--; if (peso < 2) peso = 9; }
+    const r = soma % 11;
+    return r < 2 ? 0 : 11 - r;
+  };
+  return dv(12) === Number(c[12]) && dv(13) === Number(c[13]);
+}
+
 // Expiração no horário de Brasília (-03:00), formato aceito pelo Mercado Pago
 function expiracao(min) {
   return new Date(Date.now() + min * 60000 - 3 * 3600000).toISOString().replace("Z", "-03:00");
@@ -33,14 +45,21 @@ export default async function criarPix(request) {
   const token = ENV.MP_ACCESS_TOKEN;
   if (!token) return json({ erro: "Pagamento indisponível no momento." }, 500);
 
-  const { nome, email, cpf, oferta } = await lerCorpo(request);
+  const { nome, email, cpf, oferta, whats } = await lerCorpo(request);
   if (!Object.hasOwn(OFERTAS, oferta)) return json({ erro: "Produto inválido." }, 400);
   const p = oferta, o = OFERTAS[p];
   const nomeLimpo = String(nome || "").trim().replace(/\s+/g, " ");
 
   if (nomeLimpo.split(" ").length < 2) return json({ erro: "Informe nome e sobrenome." }, 400);
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || ""))) return json({ erro: "Informe um e-mail válido." }, 400);
-  if (!cpfValido(cpf)) return json({ erro: "CPF inválido. Confira os números digitados." }, 400);
+  // Consultoria (serviço): aceita CNPJ da empresa e exige WhatsApp para agendar a primeira reunião
+  const doc = soNumeros(cpf);
+  const tipoDoc = o.servico && doc.length === 14 ? "CNPJ" : "CPF";
+  if (tipoDoc === "CNPJ" ? !cnpjValido(doc) : !cpfValido(doc)) {
+    return json({ erro: o.servico ? "CPF ou CNPJ inválido. Confira os números digitados." : "CPF inválido. Confira os números digitados." }, 400);
+  }
+  const whatsapp = String(whats || "").trim().slice(0, 30);
+  if (o.servico && soNumeros(whatsapp).length < 10) return json({ erro: "Informe o WhatsApp com DDD." }, 400);
 
   const [primeiro, ...resto] = nomeLimpo.split(" ");
   const corpo = {
@@ -49,12 +68,12 @@ export default async function criarPix(request) {
     payment_method_id: "pix",
     date_of_expiration: expiracao(VALIDADE_MINUTOS),
     external_reference: `${PREFIXO_REF}${p}`,
-    metadata: { oferta: p, nome: nomeLimpo, email: String(email).trim() },
+    metadata: { oferta: p, nome: nomeLimpo, email: String(email).trim(), ...(whatsapp ? { whatsapp } : {}) },
     payer: {
       email: String(email).trim(),
       first_name: primeiro,
       last_name: resto.join(" "),
-      identification: { type: "CPF", number: soNumeros(cpf) },
+      identification: { type: tipoDoc, number: doc },
     },
   };
   corpo.notification_url = `${(ENV.URL_SITE || new URL(request.url).origin).replace(/\/$/, "")}/api/webhook`;

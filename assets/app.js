@@ -2,7 +2,7 @@
 // Comportamento comum a todas as páginas do portal.
 // Preços e produtos vêm de assets/catalogo.js. Dados de contato ficam no CONFIG abaixo.
 
-import { OFERTAS, PRODUTOS, LICENCA_MESES, WHATSAPP, somaAvulsa, idKit, DESCONTO_KIT } from "./catalogo.js?v=20261016";
+import { OFERTAS, PRODUTOS, LICENCA_MESES, WHATSAPP, somaAvulsa, idKit, DESCONTO_KIT } from "./catalogo.js?v=20261106";
 
 /* ====================================================================
    CONFIG: dados de contato e identificação da empresa
@@ -42,9 +42,22 @@ const guardar = (k, v) => { try { sessionStorage.setItem(k, JSON.stringify(v)); 
 const ler = k => { try { return JSON.parse(sessionStorage.getItem(k) || "null"); } catch (_) { return null; } };
 
 /* ---------- entrega (usada na janela de compra e na página de retorno) ---------- */
+const TEXTO_OK = "Obrigado pela compra. Seu acesso já está liberado.";
+const TEXTO_OK_SERVICO = "Obrigado pela confiança. A equipe do Instituto vai entrar em contato pelo WhatsApp informado para agendar a primeira reunião.";
 function renderEntrega(s) {
   const caixa = $("entregas");
   caixa.innerHTML = "";
+  const servico = OFERTAS[s.oferta]?.servico;
+  if ($("ok-texto")) $("ok-texto").textContent = servico ? TEXTO_OK_SERVICO : TEXTO_OK;
+  if ($("aviso-links")) $("aviso-links").hidden = servico;
+  $("aviso-email").textContent = servico ? "Também enviamos a confirmação para o seu e-mail. Confira a caixa de entrada e o spam." : "Também enviamos tudo para o seu e-mail. Confira a caixa de entrada e o spam.";
+  if (servico) {
+    const a = document.createElement("a");
+    a.className = "btn"; a.rel = "noopener"; a.target = "_blank";
+    a.href = linkWhats(`Olá! Contratei a ${OFERTAS[s.oferta].nome} (${OFERTAS[s.oferta].detalhe}) pelo site e quero agendar a primeira reunião.`);
+    a.textContent = "Agendar agora pelo WhatsApp";
+    caixa.appendChild(a);
+  }
   (s.downloads || []).forEach(d => {
     const a = document.createElement("a");
     a.className = "btn";
@@ -96,6 +109,7 @@ document.querySelectorAll("[data-licenca]").forEach(el => (el.textContent = text
 
 /* ---------- WhatsApp e dados da empresa ---------- */
 document.querySelectorAll(".js-whats").forEach(a => { a.href = linkWhats(); a.target = "_blank"; a.rel = "noopener"; });
+document.querySelectorAll(".js-whats-credito-pag").forEach(a => { a.href = linkWhats("Olá! Comprei o Manual do Empregador e quero usar o valor como crédito na consultoria."); a.target = "_blank"; a.rel = "noopener"; });
 const emp = CONFIG.empresa;
 document.querySelectorAll("[data-empresa]").forEach(el => {
   const partes = [emp.razao, emp.cnpj && `CNPJ ${emp.cnpj}`, emp.endereco].filter(Boolean);
@@ -156,6 +170,19 @@ document.querySelectorAll("[data-pacote]").forEach(b => b.addEventListener("clic
   if (r) r.checked = true;
 }));
 
+/* ---------- consultoria: o porte escolhido no pacote Ouro define preço e oferta ---------- */
+document.querySelectorAll("[data-porte-ouro]").forEach(sel => {
+  const card = sel.closest(".pacote"), preco = card.querySelector("[data-preco-ouro]"), comprar = card.querySelector("[data-comprar]"), consulta = card.querySelector(".sob-consulta");
+  const aplicar = () => {
+    const id = sel.value, o = OFERTAS[id];
+    comprar.hidden = !o; consulta.hidden = Boolean(o);
+    preco.closest(".preco").hidden = !o;
+    if (o) { comprar.dataset.comprar = id; preco.textContent = inteiro(o.preco); }
+  };
+  sel.addEventListener("change", aplicar);
+  aplicar();
+});
+
 /* ---------- formulários (contato e lista de espera) ---------- */
 document.querySelectorAll("form[data-origem]").forEach(form => {
   form.addEventListener("submit", async e => {
@@ -196,26 +223,28 @@ const JANELA = `
       <div class="pedido">
         <div class="pedido-rotulo">Seu pedido</div>
         <div class="principal" id="principal"></div>
-        <div class="oferta-caixa">
+        <div class="oferta-caixa" id="oferta-caixa">
           <div class="oc-t">Oferta do caixa: <b>15% de desconto</b></div>
           <p class="dica-kit" id="dica-kit"></p>
           <div class="escolha" id="escolha"></div>
         </div>
         <div class="totais" id="totais"></div>
-        <p class="lancamento">Condição de lançamento</p>
+        <p class="lancamento" id="pedido-lancamento">Condição de lançamento</p>
       </div>
       <form id="form-pix" novalidate>
         <label>Nome completo <em>*</em><input name="nome" required autocomplete="name"></label>
         <label>E-mail <em>*</em><input name="email" type="email" required autocomplete="email"></label>
+        <label id="campo-whats" hidden>WhatsApp <em>*</em><input name="whats" type="tel" autocomplete="tel" placeholder="(81) 99999-9999"></label>
         <fieldset class="formas" id="formas" hidden>
           <legend>Forma de pagamento</legend>
-          <label><input type="radio" name="forma" value="pix" checked><div><b>Pix</b><span>QR Code aqui mesmo no site, acesso na hora.</span></div></label>
+          <label><input type="radio" name="forma" value="pix" checked><div><b>Pix</b><span id="desc-pix">QR Code aqui mesmo no site, acesso na hora.</span></div></label>
           <label><input type="radio" name="forma" value="cartao"><div><b>Cartão de crédito</b><span>Em até 12x, na página segura do Mercado Pago.</span></div></label>
         </fieldset>
-        <label id="campo-cpf">CPF <em>*</em><input name="cpf" inputmode="numeric" maxlength="14" placeholder="000.000.000-00"></label>
+        <label id="campo-cpf"><span id="rotulo-doc">CPF</span> <em>*</em><input name="cpf" inputmode="numeric" maxlength="14" placeholder="000.000.000-00"></label>
         <p class="erro" id="pix-erro" role="alert"></p>
         <button class="btn" type="submit" id="btn-gerar">Gerar QR Code Pix</button>
         <p class="aviso" id="aviso-pagamento">O CPF é exigido pelo Mercado Pago para emitir a cobrança Pix. A licença do simulador, quando incluída, sai no nome informado.</p>
+        <p class="aviso" id="nota-credito" hidden>Comprou o Manual do Empregador nos últimos 30 dias? <a class="js-whats-credito" href="#">Fale com a equipe antes de pagar</a> para abater o valor do e-book.</p>
       </form>
     </div>
 
@@ -237,7 +266,7 @@ const JANELA = `
     <div class="etapa ok" id="etapa-ok">
       <div class="icone" aria-hidden="true">✓</div>
       <h3>Pagamento confirmado</h3>
-      <p class="resumo">Obrigado pela compra. Seu acesso já está liberado.</p>
+      <p class="resumo" id="ok-texto">Obrigado pela compra. Seu acesso já está liberado.</p>
       <div class="entregas" id="entregas"></div>
       <div class="licenca" id="bloco-licenca" hidden>
         <p><b>Sua licença do Simulador Regime Certo</b><br>Nº <span id="lic-numero"></span>, válida até <span id="lic-venc"></span></p>
@@ -249,7 +278,7 @@ const JANELA = `
         <p class="aviso" style="margin-top:10px">Guarde esta chave. Você vai precisar dela se acessar o simulador em outro navegador.</p>
       </div>
       <p class="aviso" id="aviso-email" hidden>Também enviamos tudo para o seu e-mail. Confira a caixa de entrada e o spam.</p>
-      <p class="aviso">Os links desta tela valem por 24 horas. Baixe e guarde os arquivos.</p>
+      <p class="aviso" id="aviso-links">Os links desta tela valem por 24 horas. Baixe e guarde os arquivos.</p>
       <p class="aviso" id="lic-erro" hidden style="margin-top:10px">Sua licença será enviada pelo WhatsApp em instantes.</p>
       <p class="aviso" style="margin-top:12px">Alguma dificuldade? <a class="js-whats-modal" href="#">Fale conosco pelo WhatsApp</a>.</p>
     </div>
@@ -267,19 +296,24 @@ const JANELA = `
   if (!botoesCompra.length) return;
   document.body.insertAdjacentHTML("beforeend", JANELA);
   document.querySelectorAll(".js-whats-modal").forEach(a => { a.href = linkWhats(); a.target = "_blank"; a.rel = "noopener"; });
+  document.querySelectorAll(".js-whats-credito").forEach(a => { a.href = linkWhats("Olá! Comprei o Manual do Empregador e quero usar o valor como crédito na consultoria."); a.target = "_blank"; a.rel = "noopener"; });
 
   const modal = $("modal-pix"), form = $("form-pix"), erro = $("pix-erro"), btnGerar = $("btn-gerar");
   let inicial = null, consulta = null, relogio = null, ultimoFoco = null;
 
-  const AVISO_PIX = $("aviso-pagamento").textContent;
+  const AVISO_PIX_PRODUTO = $("aviso-pagamento").textContent;
+  const AVISO_PIX_SERVICO = "O CPF ou CNPJ é exigido pelo Mercado Pago para emitir a cobrança Pix. Depois da confirmação, a equipe entra em contato pelo WhatsApp para agendar a primeira reunião.";
+  let servico = false; // true quando a janela foi aberta por um pacote de consultoria
+  const AVISO_PIX_ATUAL = () => servico ? AVISO_PIX_SERVICO : AVISO_PIX_PRODUTO;
   const AVISO_MP = "Você será levado ao site do Mercado Pago para pagar. Depois do pagamento, volta para cá e recebe o acesso, que também vai para o seu e-mail. A licença do simulador, quando incluída, sai no nome informado.";
-  const AVISO_CARTAO = "Você será levado à página segura do Mercado Pago para pagar com cartão de crédito. Os dados do cartão são digitados lá, não neste site. Depois da aprovação, volta para cá e recebe o acesso, que também vai para o seu e-mail.";
+  const AVISO_CARTAO_PRODUTO = "Você será levado à página segura do Mercado Pago para pagar com cartão de crédito. Os dados do cartão são digitados lá, não neste site. Depois da aprovação, volta para cá e recebe o acesso, que também vai para o seu e-mail.";
+  const AVISO_CARTAO_SERVICO = "Você será levado à página segura do Mercado Pago para pagar com cartão de crédito em até 12x. Os dados do cartão são digitados lá, não neste site. Depois da aprovação, a equipe entra em contato pelo WhatsApp para agendar a primeira reunião.";
   // pagamento fora do site: modo checkout inteiro ou cartão escolhido na janela
   const vaiAoMP = () => CHECKOUT || (CARTAO && form.forma.value === "cartao");
   const rotuloBotao = () => CHECKOUT ? "Continuar para o pagamento" : vaiAoMP() ? "Pagar com cartão no Mercado Pago" : "Gerar QR Code Pix";
   function ajustarForma() {
     $("campo-cpf").hidden = vaiAoMP();
-    $("aviso-pagamento").textContent = CHECKOUT ? AVISO_MP : vaiAoMP() ? AVISO_CARTAO : AVISO_PIX;
+    $("aviso-pagamento").textContent = CHECKOUT ? AVISO_MP : vaiAoMP() ? (servico ? AVISO_CARTAO_SERVICO : AVISO_CARTAO_PRODUTO) : AVISO_PIX_ATUAL();
     btnGerar.textContent = rotuloBotao();
   }
   $("formas").hidden = !CARTAO;
@@ -291,7 +325,7 @@ const JANELA = `
   const PCT = Math.round(DESCONTO_KIT * 100) + "%";
   let principal = null, caixas = [];
   const selecionados = () => [principal, ...caixas.filter(c => c.checked).map(c => c.value)];
-  const ofertaAtual = () => idKit(selecionados());
+  const ofertaAtual = () => servico ? inicial : idKit(selecionados());
 
   function montarEscolha(extrasMarcados) {
     $("principal").innerHTML = `<span>${PRODUTOS[principal].nome}</span><b>${brl(OFERTAS[principal].preco)}</b>`;
@@ -317,11 +351,27 @@ const JANELA = `
   function parar() { clearInterval(consulta); clearInterval(relogio); }
 
   function abrir(id) {
-    inicial = id;
-    const itens = (OFERTAS[id] || OFERTAS.manual).itens;
-    principal = itens[0];
-    montarEscolha(itens.slice(1));
-    atualizarResumo();
+    inicial = OFERTAS[id] ? id : "manual";
+    servico = Boolean(OFERTAS[inicial].servico);
+    $("oferta-caixa").hidden = servico;
+    $("pedido-lancamento").hidden = servico;
+    $("campo-whats").hidden = !servico;
+    $("nota-credito").hidden = !servico;
+    $("rotulo-doc").textContent = servico ? "CPF ou CNPJ" : "CPF";
+    $("desc-pix").textContent = servico ? "QR Code aqui mesmo no site, confirmação na hora." : "QR Code aqui mesmo no site, acesso na hora.";
+    form.cpf.maxLength = servico ? 18 : 14;
+    form.cpf.placeholder = servico ? "CPF ou CNPJ da empresa" : "000.000.000-00";
+    if (servico) {
+      const o = OFERTAS[inicial];
+      $("principal").innerHTML = `<span>${o.nome}<small style="display:block;opacity:.75">${o.detalhe}</small></span><b>${brl(o.preco)}</b>`;
+      $("totais").innerHTML = `<div class="total"><span>Total</span><strong id="pix-valor">${brl(o.preco)}</strong></div>`;
+    } else {
+      const itens = OFERTAS[inicial].itens;
+      principal = itens[0];
+      montarEscolha(itens.slice(1));
+      atualizarResumo();
+    }
+    ajustarForma();
     ultimoFoco = document.activeElement;
     etapa("etapa-dados"); erro.textContent = "";
     $("demo-aviso").hidden = !DEMO;
@@ -342,8 +392,9 @@ const JANELA = `
   document.addEventListener("keydown", e => { if (e.key === "Escape" && modal.classList.contains("aberto")) fechar(); });
 
   form.cpf.addEventListener("input", e => {
-    let v = e.target.value.replace(/\D/g, "").slice(0, 11);
-    v = v.replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+    let v = e.target.value.replace(/\D/g, "").slice(0, servico ? 14 : 11);
+    if (v.length > 11) v = v.replace(/^(\d{2})(\d)/, "$1.$2").replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3").replace(/\.(\d{3})(\d)/, ".$1/$2").replace(/(\d{4})(\d)/, "$1-$2");
+    else v = v.replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d{1,2})$/, "$1-$2");
     e.target.value = v;
   });
 
@@ -352,11 +403,14 @@ const JANELA = `
     erro.textContent = "";
     if (form.nome.value.trim().split(/\s+/).length < 2) { erro.textContent = "Informe nome e sobrenome."; return; }
     if (!form.email.value || !form.email.checkValidity()) { erro.textContent = "Informe um e-mail válido."; return; }
-    if (!vaiAoMP() && form.cpf.value.replace(/\D/g, "").length !== 11) { erro.textContent = "Informe o CPF completo."; return; }
+    if (servico && form.whats.value.replace(/\D/g, "").length < 10) { erro.textContent = "Informe o WhatsApp com DDD, para agendarmos a primeira reunião."; return; }
+    const doc = form.cpf.value.replace(/\D/g, "").length;
+    if (!vaiAoMP() && !(doc === 11 || (servico && doc === 14))) { erro.textContent = servico ? "Informe o CPF ou o CNPJ completo." : "Informe o CPF completo."; return; }
 
     const foraDoSite = vaiAoMP();
     btnGerar.disabled = true; btnGerar.textContent = foraDoSite ? "Abrindo o Mercado Pago..." : "Gerando Pix...";
     const dados = { nome: form.nome.value.trim(), email: form.email.value.trim(), cpf: form.cpf.value, oferta: ofertaAtual() };
+    if (servico) dados.whats = form.whats.value.trim();
     if (CARTAO && foraDoSite) { dados.forma = "cartao"; delete dados.cpf; }
     guardar("ifl-compra", { email: dados.email, oferta: dados.oferta });
     try {
