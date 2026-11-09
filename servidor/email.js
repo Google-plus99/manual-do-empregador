@@ -120,24 +120,61 @@ const TITULO_ORIGEM = {
   consultoria: "Consultoria para empresas",
 };
 
+// Cores do Instituto (as mesmas do site): vinho, preto avinhado, dourado e branco
+const COR = { fundo: "#140a0b", vinho: "#3c181a", cartao: "#250f10", dourado: "#c9a84c", texto: "#ffffff", suave: "#cbb9ba", linha: "#4a2a2d", zap: "#25d366" };
+const LOGO_SIMBOLO = "https://institutofelipelopes.com.br/assets/img/logo-ifl-simbolo.png";
+
+// Aviso de novo contato no padrão visual do Instituto (tabelas e estilos em linha, para o Gmail)
+export function htmlContato({ nome, email, whatsapp, mensagem, origem, logo = LOGO_SIMBOLO }) {
+  const zap = String(whatsapp || "").replace(/\D/g, "");
+  const linkZap = zap ? `https://wa.me/${zap.length <= 11 ? "55" + zap : zap}` : "";
+  const primeiro = String(nome || "").trim().split(/\s+/)[0] || "";
+  const fonte = "font-family:Arial,Helvetica,sans-serif";
+  const rotulo = t => `<td style="${fonte};padding:12px 16px 12px 0;border-bottom:1px solid ${COR.linha};color:${COR.dourado};font-size:11px;font-weight:bold;letter-spacing:2px;text-transform:uppercase;vertical-align:top;width:120px">${t}</td>`;
+  const valor = v => `<td style="${fonte};padding:12px 0;border-bottom:1px solid ${COR.linha};color:${COR.texto};font-size:15px">${v}</td>`;
+  const link = (href, t) => `<a href="${esc(href)}" style="color:${COR.texto};text-decoration:underline">${esc(t)}</a>`;
+  const botao = (href, t, fundo, cor, borda) => `<a href="${esc(href)}" style="display:inline-block;${fonte};background:${fundo};color:${cor};border:2px solid ${borda};text-decoration:none;font-size:13px;font-weight:bold;letter-spacing:2px;text-transform:uppercase;padding:13px 22px;margin:0 8px 10px 0">${t}</a>`;
+  return `<!doctype html><html><body style="margin:0;padding:0;background:${COR.fundo}">
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:${COR.fundo}"><tr><td align="center" style="padding:28px 12px">
+<table role="presentation" width="600" cellpadding="0" cellspacing="0" style="width:100%;max-width:600px;background:${COR.cartao};border:1px solid ${COR.linha}">
+  <tr><td style="background:${COR.vinho};padding:26px 32px;border-bottom:3px solid ${COR.dourado}">
+    <table role="presentation" cellpadding="0" cellspacing="0"><tr>
+      <td style="padding-right:14px;vertical-align:middle"><img src="${esc(logo)}" width="40" height="48" alt="" style="display:block;border:0"></td>
+      <td style="${fonte};vertical-align:middle;color:${COR.texto};font-size:12px;font-weight:bold;letter-spacing:4px;line-height:1.5">INSTITUTO<br>FELIPE LOPES</td>
+    </tr></table>
+  </td></tr>
+  <tr><td style="padding:30px 32px 6px">
+    <div style="${fonte};color:${COR.dourado};font-size:11px;font-weight:bold;letter-spacing:3px;text-transform:uppercase">${esc(TITULO_ORIGEM[origem] || origem)}</div>
+    <h1 style="${fonte};margin:8px 0 6px;color:${COR.texto};font-size:26px;line-height:1.2;text-transform:uppercase;letter-spacing:1px">Novo contato pelo site</h1>
+    <p style="${fonte};margin:0;color:${COR.suave};font-size:14px;line-height:1.6">${esc(primeiro)} preencheu o formulário e aguarda o retorno da equipe.</p>
+  </td></tr>
+  <tr><td style="padding:16px 32px 4px">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-top:1px solid ${COR.linha}">
+      <tr>${rotulo("Nome")}${valor(esc(nome))}</tr>
+      <tr>${rotulo("E-mail")}${valor(link("mailto:" + email, email))}</tr>
+      <tr>${rotulo("WhatsApp")}${valor(linkZap ? link(linkZap, whatsapp) : esc(whatsapp))}</tr>
+    </table>
+  </td></tr>
+  ${mensagem ? `<tr><td style="padding:20px 32px 4px">
+    <div style="${fonte};color:${COR.dourado};font-size:11px;font-weight:bold;letter-spacing:2px;text-transform:uppercase;margin-bottom:8px">Mensagem</div>
+    <div style="${fonte};background:${COR.vinho};border-left:3px solid ${COR.dourado};color:${COR.texto};font-size:15px;line-height:1.6;padding:14px 16px;white-space:pre-wrap">${esc(mensagem)}</div>
+  </td></tr>` : ""}
+  <tr><td style="padding:24px 32px 8px">
+    ${botao("mailto:" + email, "Responder por e-mail", COR.vinho, COR.texto, COR.dourado)}
+    ${linkZap ? botao(linkZap, "Chamar no WhatsApp", COR.zap, "#ffffff", COR.zap) : ""}
+  </td></tr>
+  <tr><td style="${fonte};padding:8px 32px 28px;color:${COR.suave};font-size:12px;line-height:1.6">Você também pode usar o botão Responder do Gmail: a resposta vai direto para ${esc(email)}.</td></tr>
+  <tr><td style="${fonte};background:${COR.vinho};padding:16px 32px;color:${COR.suave};font-size:11px;letter-spacing:1px;text-align:center">Instituto Felipe Lopes · institutofelipelopes.com.br</td></tr>
+</table>
+</td></tr></table></body></html>`;
+}
+
 export async function enviarContato({ nome, email, whatsapp, mensagem, origem }) {
   if (!emailAtivo()) return false;
-  const vinho = "#3c181a";
   const assunto = `Novo contato: ${TITULO_ORIGEM[origem] || "site"}, ${nome}`;
   const zap = String(whatsapp || "").replace(/\D/g, "");
   const linkZap = zap ? `https://wa.me/${zap.length <= 11 ? "55" + zap : zap}` : "";
-  const linha = (rotulo, valor) => `<tr><td style="padding:6px 12px 6px 0;color:#625a5c;vertical-align:top">${rotulo}</td><td style="padding:6px 0">${valor}</td></tr>`;
-  const html = `<div style="font-family:Arial,Helvetica,sans-serif;color:#2b2627;max-width:560px;margin:0 auto;line-height:1.55">
-  <p style="font-size:13px;letter-spacing:2px;color:${vinho};font-weight:bold;margin:0 0 18px">INSTITUTO FELIPE LOPES</p>
-  <h1 style="font-size:20px;margin:0 0 14px">Novo contato pelo site</h1>
-  <table style="border-collapse:collapse;font-size:15px">
-  ${linha("Formulário", esc(TITULO_ORIGEM[origem] || origem))}
-  ${linha("Nome", esc(nome))}
-  ${linha("E-mail", `<a href="mailto:${esc(email)}" style="color:${vinho}">${esc(email)}</a>`)}
-  ${linha("WhatsApp", linkZap ? `<a href="${linkZap}" style="color:${vinho}">${esc(whatsapp)}</a>` : esc(whatsapp))}
-  </table>
-  ${mensagem ? `<h2 style="font-size:16px;margin:22px 0 8px">Mensagem</h2><div style="white-space:pre-wrap;background:#f4f2f2;padding:12px">${esc(mensagem)}</div>` : ""}
-  <p style="margin-top:24px;font-size:13px;color:#625a5c">Para responder, use o botão Responder: a resposta vai direto para ${esc(email)}.</p></div>`;
+  const html = htmlContato({ nome, email, whatsapp, mensagem, origem });
   const texto = `Novo contato pelo site\nFormulário: ${TITULO_ORIGEM[origem] || origem}\nNome: ${nome}\nE-mail: ${email}\nWhatsApp: ${whatsapp}${linkZap ? " (" + linkZap + ")" : ""}\n` + (mensagem ? `\nMensagem:\n${mensagem}\n` : "");
   const r = await fetch("https://api.resend.com/emails", {
     method: "POST",
