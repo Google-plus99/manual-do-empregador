@@ -70,7 +70,7 @@ Variáveis em Workers & Pages > projeto > Settings > Variables and Secrets, toda
 - `LIC_DOMINIO`: institutofelipelopes.com.br (a licença só funciona nesse domínio).
 - `PDF_BUCKET` (opcional, padrão `produtos`).
 - `RESEND_API_KEY`: ativa o e-mail de entrega e o aviso dos formulários. Sem ela, a venda funciona e só não manda e-mail. `EMAIL_REMETENTE` e `EMAIL_RESPOSTA` não são mais usadas (desde 05/11/2026).
-- `EMAIL_CONTATOS` (opcional, padrão `contatos@institutofelipelopes.com.br`): **endereço único do Instituto** (decidido em 05/11/2026). Os e-mails de entrega saem dele (remetente "Instituto Felipe Lopes"), as respostas dos clientes voltam para ele e os avisos dos formulários chegam nele. Recebido pelo Email Routing da Cloudflare, que encaminha para lopes0805@gmail.com (só existe a regra `contatos@`; o antigo `contato@` foi desativado). Para responder como contatos@ no Gmail: "Enviar e-mail como" via SMTP do Resend (`smtp.resend.com`, 465, usuário `resend`, senha = chave de API própria).
+- `EMAIL_CONTATOS` (opcional, padrão `contatos@institutofelipelopes.com.br`): **endereço único do Instituto** (decidido em 05/11/2026). Os e-mails de entrega saem dele (remetente "Instituto Felipe Lopes"), as respostas dos clientes voltam para ele e os avisos dos formulários chegam nele. Recebido pelo Email Routing da Cloudflare, que encaminha para institutofelipelopes@gmail.com (conta do Instituto criada em 09/11/2026, que também envia como contatos@; só existe a regra `contatos@`, o antigo `contato@` foi desativado). Para responder como contatos@ no Gmail: "Enviar e-mail como" via SMTP do Resend (`smtp.resend.com`, 465, usuário `resend`, senha = chave de API própria).
 
 Nunca colocar token ou chave privada no HTML nem no repositório.
 
