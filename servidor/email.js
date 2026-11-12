@@ -199,33 +199,47 @@ export async function enviarContato({ nome, email, whatsapp, mensagem, origem })
 }
 
 // ---------------------------------------------------------------------
-// Aviso de venda da consultoria para a equipe (contatos@), com os dados para agendar.
+// Aviso de venda para a equipe (contatos@): toda compra aprovada, e-books, simulador,
+// kits e consultoria (desde 12/11/2026). Na consultoria, com os dados para agendar.
 // ---------------------------------------------------------------------
-export function htmlVenda({ idPagamento, nome, email, whatsapp, oferta, detalhe, valor, forma, logo }) {
+export function htmlVenda({ idPagamento, nome, email, whatsapp, oferta, detalhe, valor, forma, servico, licenca, logo }) {
   const zap = linkWhats(whatsapp);
   const valorBR = Number(valor || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-  return moldura({ logo, sobretitulo: "Venda pelo site", titulo: "Consultoria vendida",
-    intro: `${esc(primeiroNome(nome))} contratou um pacote de consultoria e aguarda o agendamento da primeira reunião.`,
+  const pequeno = t => `<br><span style="color:${COR.suave};font-size:13px">${esc(t)}</span>`;
+  const linhas = [
+    [servico ? "Pacote" : "Produto", esc(oferta) + (detalhe ? pequeno(detalhe) : "")],
+    ["Valor", `<b>${esc(valorBR)}</b>` + pequeno(forma)],
+    ["Cliente", esc(nome)], ["E-mail", linkClaro("mailto:" + email, email)],
+  ];
+  if (servico || zap) linhas.push(["WhatsApp", zap ? linkClaro(zap, whatsapp) : "não informado"]);
+  if (licenca?.numero) linhas.push(["Licença", esc(licenca.numero) + (licenca.vencimento ? pequeno("válida até " + dataBR(licenca.vencimento)) : "")]);
+  linhas.push(["Pagamento", esc(idPagamento)]);
+  return moldura({ logo, sobretitulo: "Venda pelo site", titulo: servico ? "Consultoria vendida" : "Nova venda",
+    intro: servico
+      ? `${esc(primeiroNome(nome))} contratou um pacote de consultoria e aguarda o agendamento da primeira reunião.`
+      : `${esc(primeiroNome(nome))} comprou pelo site. O acesso já foi enviado para o e-mail do cliente.`,
     blocos: [
-      tabela([["Pacote", `${esc(oferta)}<br><span style="color:${COR.suave};font-size:13px">${esc(detalhe)}</span>`],
-        ["Valor", `<b>${esc(valorBR)}</b><br><span style="color:${COR.suave};font-size:13px">${esc(forma)}</span>`],
-        ["Cliente", esc(nome)], ["E-mail", linkClaro("mailto:" + email, email)],
-        ["WhatsApp", zap ? linkClaro(zap, whatsapp) : "não informado"], ["Pagamento", esc(idPagamento)]]),
-      rotuloDourado("Próximo passo") + destaque("Entrar em contato com o cliente para agendar a primeira reunião."),
+      tabela(linhas),
+      servico && rotuloDourado("Próximo passo") + destaque("Entrar em contato com o cliente para agendar a primeira reunião."),
       (zap ? botao(zap, "Chamar no WhatsApp", "zap") : "") + botao("mailto:" + email, "Responder por e-mail"),
     ] });
 }
 
-export async function enviarAvisoVenda({ idPagamento, nome, email, whatsapp, oferta, detalhe, valor, forma }) {
+export async function enviarAvisoVenda(dados) {
   if (!emailAtivo()) return false;
+  const { idPagamento, nome, email, whatsapp, oferta, detalhe, valor, forma, servico, licenca } = dados;
   const linkZap = linkWhats(whatsapp);
   const valorBR = Number(valor || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-  const html = htmlVenda({ idPagamento, nome, email, whatsapp, oferta, detalhe, valor, forma });
-  const texto = `Consultoria vendida pelo site\nPacote: ${oferta} (${detalhe})\nValor: ${valorBR}, ${forma}\nCliente: ${nome}\nE-mail: ${email}\nWhatsApp: ${whatsapp || "não informado"}${linkZap ? " (" + linkZap + ")" : ""}\nPagamento: ${idPagamento}\n\nPróximo passo: agendar a primeira reunião.`;
+  const html = htmlVenda(dados);
+  const texto = `${servico ? "Consultoria vendida" : "Nova venda"} pelo site\n${servico ? "Pacote" : "Produto"}: ${oferta}${detalhe ? " (" + detalhe + ")" : ""}\nValor: ${valorBR}, ${forma}\nCliente: ${nome}\nE-mail: ${email}\n` +
+    (servico || linkZap ? `WhatsApp: ${whatsapp || "não informado"}${linkZap ? " (" + linkZap + ")" : ""}\n` : "") +
+    (licenca?.numero ? `Licença: ${licenca.numero}\n` : "") + `Pagamento: ${idPagamento}\n` +
+    (servico ? "\nPróximo passo: agendar a primeira reunião." : "");
   const r = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${ENV.RESEND_API_KEY}`, "Content-Type": "application/json", "Idempotency-Key": `venda-${idPagamento}` },
-    body: JSON.stringify({ from: remetente(), to: [DESTINO_CONTATOS()], reply_to: email || undefined, subject: `Consultoria vendida: ${oferta}, ${nome}`, html, text: texto }),
+    body: JSON.stringify({ from: remetente(), to: [DESTINO_CONTATOS()], reply_to: email || undefined,
+      subject: `${servico ? "Consultoria vendida" : "Nova venda"}: ${oferta}, ${nome}`, html, text: texto }),
   });
   if (!r.ok) throw new Error(`Resend ${r.status}: ${(await r.text()).slice(0, 300)}`);
   return true;

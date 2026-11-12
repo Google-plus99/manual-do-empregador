@@ -6,7 +6,7 @@
 import { ENV } from "./ambiente.js";
 import { gerarLicenca } from "./licenca.js";
 import { supabaseAtivo, buscarUm, atualizar, inserir, linkAssinado } from "./supabase.js";
-import { OFERTAS, PRODUTOS, WHATSAPP } from "../assets/catalogo.js";
+import { OFERTAS, PRODUTOS, WHATSAPP, DESCONTO_KIT } from "../assets/catalogo.js";
 import { emailAtivo, enviarEntrega, enviarAvisoVenda } from "./email.js";
 
 const PREFIXO = "ifl:";
@@ -99,16 +99,18 @@ export async function processarPagamento(p, site = "") {
   return resposta;
 }
 
-// Consultoria vendida: avisa a equipe em contatos@ e registra o contato para o agendamento.
+// Toda venda aprovada avisa a equipe em contatos@; na consultoria, também registra o contato para o agendamento.
 // Uma falha aqui não desfaz a venda nem reenvia o e-mail do cliente.
-async function avisarVendaServico(p, o) {
+async function avisarVenda(p, o, resposta) {
   const dados = {
     idPagamento: String(p.id), nome: nomeDe(p), email: emailDe(p), whatsapp: p.metadata?.whatsapp || "",
-    oferta: o.nome, detalhe: o.detalhe, valor: p.transaction_amount,
+    oferta: o.servico ? o.nome : o.itens.map(i => PRODUTOS[i].nome).join(" + "),
+    detalhe: o.servico ? o.detalhe : (o.kit ? `kit com ${Math.round(DESCONTO_KIT * 100)}% de desconto` : ""),
+    valor: p.transaction_amount, servico: Boolean(o.servico), licenca: resposta.licenca || null,
     forma: p.payment_type_id === "credit_card" ? `cartão de crédito${p.installments > 1 ? ` em ${p.installments}x` : ""}` : "Pix",
   };
-  try { await enviarAvisoVenda(dados); } catch (e) { console.error("Falha ao avisar a venda da consultoria:", e.message); }
-  if (supabaseAtivo()) {
+  try { await enviarAvisoVenda(dados); } catch (e) { console.error("Falha ao avisar a venda:", e.message); }
+  if (o.servico && supabaseAtivo()) {
     try {
       await inserir("contatos", {
         nome: dados.nome, email: dados.email, whatsapp: dados.whatsapp || "não informado", origem: "consultoria",
@@ -118,9 +120,6 @@ async function avisarVendaServico(p, o) {
   }
 }
 
-// Manda o e-mail de entrega uma única vez por pagamento.
-// Com Supabase, a coluna email_enviado_em funciona como trava; sem ele, o Resend
-// descarta repetições pela chave de idempotência.
 async function enviarEmailUmaVez(p, oferta, pdfs, resposta) {
   const para = emailDe(p);
   if (!emailAtivo() || !para) return false;
@@ -143,7 +142,7 @@ async function enviarEmailUmaVez(p, oferta, pdfs, resposta) {
       para, idPagamento: pid, nome: nomeDe(p), oferta: o.nome, servico: o.servico ? o.detalhe : null,
       downloads, licenca: resposta.licenca, linkSimulador: resposta.link_simulador, whatsapp: WHATSAPP,
     });
-    if (o.servico) await avisarVendaServico(p, o);
+    await avisarVenda(p, o, resposta);
     console.log(`[E-MAIL] entrega enviada | pagamento ${pid} | ${para}`);
     return true;
   } catch (e) {
