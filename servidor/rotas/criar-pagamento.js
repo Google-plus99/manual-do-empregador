@@ -38,9 +38,9 @@ export default async function criarPagamento(request) {
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({ erro: "Informe um e-mail válido." }, 400);
 
   const o = OFERTAS[oferta];
-  // Consultoria (serviço): WhatsApp obrigatório para agendar a primeira reunião
+  // WhatsApp obrigatório em toda compra (12/11/2026): vai no metadata e no aviso de venda
   const whatsapp = limpar(b.whats, 30);
-  if (o.servico && whatsapp.replace(/\D/g, "").length < 10) return json({ erro: "Informe o WhatsApp com DDD." }, 400);
+  if (whatsapp.replace(/\D/g, "").length < 10) return json({ erro: "Informe o WhatsApp com DDD." }, 400);
   const site = enderecoSite(request);
   const [primeiro, ...resto] = nome.split(" ");
 

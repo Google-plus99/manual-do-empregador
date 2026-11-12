@@ -234,7 +234,7 @@ const JANELA = `
       <form id="form-pix" novalidate>
         <label>Nome completo <em>*</em><input name="nome" required autocomplete="name"></label>
         <label>E-mail <em>*</em><input name="email" type="email" required autocomplete="email"></label>
-        <label id="campo-whats" hidden>WhatsApp <em>*</em><input name="whats" type="tel" autocomplete="tel" placeholder="(81) 99999-9999"></label>
+        <label id="campo-whats">WhatsApp <em>*</em><input name="whats" type="tel" autocomplete="tel" placeholder="(81) 99999-9999"></label>
         <fieldset class="formas" id="formas" hidden>
           <legend>Forma de pagamento</legend>
           <label><input type="radio" name="forma" value="pix" checked><div><b>Pix</b><span id="desc-pix">QR Code aqui mesmo no site, acesso na hora.</span></div></label>
@@ -355,7 +355,6 @@ const JANELA = `
     servico = Boolean(OFERTAS[inicial].servico);
     $("oferta-caixa").hidden = servico;
     $("pedido-lancamento").hidden = servico;
-    $("campo-whats").hidden = !servico;
     $("nota-credito").hidden = !servico;
     $("rotulo-doc").textContent = servico ? "CPF ou CNPJ" : "CPF";
     $("desc-pix").textContent = servico ? "QR Code aqui mesmo no site, confirmação na hora." : "QR Code aqui mesmo no site, acesso na hora.";
@@ -403,14 +402,14 @@ const JANELA = `
     erro.textContent = "";
     if (form.nome.value.trim().split(/\s+/).length < 2) { erro.textContent = "Informe nome e sobrenome."; return; }
     if (!form.email.value || !form.email.checkValidity()) { erro.textContent = "Informe um e-mail válido."; return; }
-    if (servico && form.whats.value.replace(/\D/g, "").length < 10) { erro.textContent = "Informe o WhatsApp com DDD, para agendarmos a primeira reunião."; return; }
+    if (form.whats.value.replace(/\D/g, "").length < 10) { erro.textContent = servico ? "Informe o WhatsApp com DDD, para agendarmos a primeira reunião." : "Informe o WhatsApp com DDD, para falarmos com você se precisar."; return; }
     const doc = form.cpf.value.replace(/\D/g, "").length;
     if (!vaiAoMP() && !(doc === 11 || (servico && doc === 14))) { erro.textContent = servico ? "Informe o CPF ou o CNPJ completo." : "Informe o CPF completo."; return; }
 
     const foraDoSite = vaiAoMP();
     btnGerar.disabled = true; btnGerar.textContent = foraDoSite ? "Abrindo o Mercado Pago..." : "Gerando Pix...";
     const dados = { nome: form.nome.value.trim(), email: form.email.value.trim(), cpf: form.cpf.value, oferta: ofertaAtual() };
-    if (servico) dados.whats = form.whats.value.trim();
+    dados.whats = form.whats.value.trim();
     if (CARTAO && foraDoSite) { dados.forma = "cartao"; delete dados.cpf; }
     guardar("ifl-compra", { email: dados.email, oferta: dados.oferta });
     try {

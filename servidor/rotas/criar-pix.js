@@ -52,14 +52,14 @@ export default async function criarPix(request) {
 
   if (nomeLimpo.split(" ").length < 2) return json({ erro: "Informe nome e sobrenome." }, 400);
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || ""))) return json({ erro: "Informe um e-mail válido." }, 400);
-  // Consultoria (serviço): aceita CNPJ da empresa e exige WhatsApp para agendar a primeira reunião
+  // Consultoria (serviço) aceita CNPJ da empresa. WhatsApp obrigatório em toda compra (12/11/2026), vai no aviso de venda
   const doc = soNumeros(cpf);
   const tipoDoc = o.servico && doc.length === 14 ? "CNPJ" : "CPF";
   if (tipoDoc === "CNPJ" ? !cnpjValido(doc) : !cpfValido(doc)) {
     return json({ erro: o.servico ? "CPF ou CNPJ inválido. Confira os números digitados." : "CPF inválido. Confira os números digitados." }, 400);
   }
   const whatsapp = String(whats || "").trim().slice(0, 30);
-  if (o.servico && soNumeros(whatsapp).length < 10) return json({ erro: "Informe o WhatsApp com DDD." }, 400);
+  if (soNumeros(whatsapp).length < 10) return json({ erro: "Informe o WhatsApp com DDD." }, 400);
 
   const [primeiro, ...resto] = nomeLimpo.split(" ");
   const corpo = {
