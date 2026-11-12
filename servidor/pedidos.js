@@ -101,13 +101,23 @@ export async function processarPagamento(p, site = "") {
 
 // Toda venda aprovada avisa a equipe em contatos@; na consultoria, também registra o contato para o agendamento.
 // Uma falha aqui não desfaz a venda nem reenvia o e-mail do cliente.
+// Forma de pagamento em português, para o aviso de venda
+function formaDe(p) {
+  const t = p.payment_type_id;
+  if (t === "credit_card") return `cartão de crédito${p.installments > 1 ? ` em ${p.installments}x` : ""}`;
+  if (t === "debit_card") return "cartão de débito";
+  if (t === "account_money") return "saldo da conta Mercado Pago";
+  if (t === "bank_transfer" || p.payment_method_id === "pix") return "Pix";
+  return t || "não informado";
+}
+
 async function avisarVenda(p, o, resposta) {
   const dados = {
     idPagamento: String(p.id), nome: nomeDe(p), email: emailDe(p), whatsapp: p.metadata?.whatsapp || "",
     oferta: o.servico ? o.nome : o.itens.map(i => PRODUTOS[i].nome).join(" + "),
     detalhe: o.servico ? o.detalhe : (o.kit ? `kit com ${Math.round(DESCONTO_KIT * 100)}% de desconto` : ""),
     valor: p.transaction_amount, servico: Boolean(o.servico), licenca: resposta.licenca || null,
-    forma: p.payment_type_id === "credit_card" ? `cartão de crédito${p.installments > 1 ? ` em ${p.installments}x` : ""}` : "Pix",
+    forma: formaDe(p),
   };
   try { await enviarAvisoVenda(dados); } catch (e) { console.error("Falha ao avisar a venda:", e.message); }
   if (o.servico && supabaseAtivo()) {
@@ -128,7 +138,13 @@ async function enviarEmailUmaVez(p, oferta, pdfs, resposta) {
     const ja = await buscarUm("pedidos", `pagamento_id=eq.${pid}&email_enviado_em=not.is.null&select=pagamento_id`);
     if (ja) return true;
     const marcadas = await atualizar("pedidos", `pagamento_id=eq.${pid}&email_enviado_em=is.null`, { email_enviado_em: new Date().toISOString() });
-    if (!marcadas?.length) return true; // outra chamada já está enviando
+    if (!marcadas?.length) {
+      // Se o pedido nem existe no banco (a gravação falhou), não deixa o cliente sem o e-mail:
+      // envia assim mesmo; a chave de idempotência do Resend evita e-mail repetido.
+      const existe = await buscarUm("pedidos", `pagamento_id=eq.${pid}&select=pagamento_id`);
+      if (existe) return true; // outra chamada já está enviando
+      console.error(`[PEDIDO] pagamento ${pid} não está na tabela pedidos; enviando o e-mail sem a trava do banco`);
+    }
   }
   try {
     const downloads = [];
